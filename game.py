@@ -18,11 +18,12 @@ class Game:
 	def step(self, action):
 		raise NotImplemented
 
+
 class GameState():
 	def __init__(self, board, playerTurn):
 		raise NotImplemented
 
-	def _allowedActions(self):
+	def _allowed_actions(self):
 		allowed = []
 		raise NotImplemented
 		return allowed
@@ -31,19 +32,19 @@ class GameState():
 		raise NotImplemented
 		return (position)
 
-	def _convertStateToId(self):
+	def _convert_state_to_id(self):
 		raise NotImplemented
 		return id
 
-	def _checkForEnd(self):
+	def _check_for_end(self):
 		raise NotImplemented
 		return (1 or 0)
 
-	def _getValue(self):
+	def _get_value(self):
 		raise NotImplemented
 		return evalOfStateForPlayer
 
-	def takeAction(self, action):
+	def take_action(self, action):
 		raise NotImplemented
 
 	def render(self, logger):
