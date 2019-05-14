@@ -49,6 +49,6 @@ class GameState():
 
 	def render(self, logger):
 		for r in range(8):
-			logger.info([self.pieces[str(x)] for x in self.board[r][0:7])
+			logger.info([self.pieces[str(x)] for x in self.board[r][0:7]])
 		logger.info('--------------')
 

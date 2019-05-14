@@ -154,8 +154,7 @@ class Agent():
         raise NotImplemented
 
     def evaluateLeaf(self, leaf, value, done, breadcrumbs):
-
-
+        """
         lg.logger_mcts.info('------EVALUATING LEAF------')
 
         if done == 0:
