@@ -4,7 +4,6 @@ This contains the Node, Edge and MCTS classes, that constitute a Monte Carlo Sea
 
 import numpy as np
 
-import config
 import logger as lg
 
 
@@ -75,7 +74,6 @@ class MCTS:
             for idx, (action, edge) in enumerate(currentNode.edges):
 
                 U = self.cpuct * \
-<<<<<<< HEAD
                     edge.stats['P']  * \
                     np.sqrt(np.log(Nb) / edge.stats['N'])
 
@@ -84,18 +82,7 @@ class MCTS:
                 lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
                     , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
                     , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
-=======
-                    edge.stats['P'] * \
-                    np.sqrt(Nb) / (1 + edge.stats['N'])
 
-                Q = edge.stats['Q']
-
-                lg.logger_mcts.info(
-                    'action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'], 6), np.round(nu[idx], 6),
-                    (edge.stats['P'])
-                    , np.round(edge.stats['W'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
->>>>>>> 3941ea3b82b0309fe5db8c741afc2699e29f9b88
 
                 if Q + U > maxQU:
                     maxQU = Q + U
