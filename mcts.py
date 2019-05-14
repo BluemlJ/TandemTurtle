@@ -80,10 +80,10 @@ class MCTS():
             maxQU = -99999
 
             if currentNode == self.root:
-                epsilon = config.EPSILON
+
                 nu = np.random.dirichlet([config.ALPHA] * len(currentNode.edges))
             else:
-                epsilon = 0
+
                 nu = [0] * len(currentNode.edges)
 
             Nb = 0
@@ -93,13 +93,13 @@ class MCTS():
             for idx, (action, edge) in enumerate(currentNode.edges):
 
                 U = self.cpuct * \
-                    ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )  * \
+                    edge.stats['P']  * \
                     np.sqrt(Nb) / (1 + edge.stats['N'])
 
                 Q = edge.stats['Q']
 
                 lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
+                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ( edge.stats['P'] )
                     , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
                 if Q + U > maxQU:
