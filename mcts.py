@@ -3,23 +3,18 @@ This contains the Node, Edge and MCTS classes, that constitute a Monte Carlo Sea
 """
 
 import numpy as np
-import logging
+
 import config
-
-from utils import setup_logger
-import loggers as lg
+import logger as lg
 
 
-class Node():
+class Node:
 
     def __init__(self, state):
-        """
         self.state = state
         self.playerTurn = state.playerTurn
         self.id = state.id
         self.edges = []
-        """
-        raise NotImplemented
 
     def isLeaf(self):
         if len(self.edges) > 0:
@@ -28,43 +23,36 @@ class Node():
             return True
 
 
-class Edge():
+class Edge:
 
     def __init__(self, inNode, outNode, prior, action):
-        """
         self.id = inNode.state.id + '|' + outNode.state.id
         self.inNode = inNode
         self.outNode = outNode
         self.playerTurn = inNode.state.playerTurn
         self.action = action
 
-        self.stats =  {
-                    'N': 0,
-                    'W': 0,
-                    'Q': 0,
-                    'P': prior,
-                }
-        """
-        raise NotImplemented
+        self.stats = {
+            'N': 0,
+            'W': 0,
+            'Q': 0,
+            # 'P': prior, not needed yet (only for NN Approach, for simple approach P = 1
+            'P': 1,
+        }
 
 
-class MCTS():
+class MCTS:
 
     def __init__(self, root, cpuct):
-        """
         self.root = root
         self.tree = {}
         self.cpuct = cpuct
         self.add_node(root)
-        """
-        raise NotImplemented
 
     def __len__(self):
         return len(self.tree)
 
     def move_to_leaf(self):
-
-        """
         lg.logger_mcts.info('------MOVING TO LEAF------')
 
         breadcrumbs = []
@@ -93,14 +81,16 @@ class MCTS():
             for idx, (action, edge) in enumerate(currentNode.edges):
 
                 U = self.cpuct * \
-                    edge.stats['P']  * \
+                    edge.stats['P'] * \
                     np.sqrt(Nb) / (1 + edge.stats['N'])
 
                 Q = edge.stats['Q']
 
-                lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ( edge.stats['P'] )
-                    , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
+                lg.logger_mcts.info(
+                    'action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
+                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'], 6), np.round(nu[idx], 6),
+                    (edge.stats['P'])
+                    , np.round(edge.stats['W'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
@@ -109,18 +99,16 @@ class MCTS():
 
             lg.logger_mcts.info('action with highest Q + U...%d', simulationAction)
 
-            newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
+            newState, value, done = currentNode.state.takeAction(
+                simulationAction)  # the value of the newState from the POV of the new playerTurn
             currentNode = simulationEdge.outNode
             breadcrumbs.append(simulationEdge)
 
         lg.logger_mcts.info('DONE...%d', done)
 
         return currentNode, value, done, breadcrumbs
-        """
-        raise NotImplemented
 
     def back_fill(self, leaf, value, breadcrumbs):
-        """
         lg.logger_mcts.info('------DOING BACKFILL------')
 
         currentPlayer = leaf.state.playerTurn
@@ -137,16 +125,14 @@ class MCTS():
             edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
             lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
-                , value * direction
-                , playerTurn
-                , edge.stats['N']
-                , edge.stats['W']
-                , edge.stats['Q']
-                )
+                                , value * direction
+                                , playerTurn
+                                , edge.stats['N']
+                                , edge.stats['W']
+                                , edge.stats['Q']
+                                )
 
             edge.outNode.state.render(lg.logger_mcts)
-        """
-        raise NotImplemented
 
     def add_node(self, node):
         self.tree[node.id] = node
