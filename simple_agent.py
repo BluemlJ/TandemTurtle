@@ -156,40 +156,7 @@ class Agent():
         """
         raise NotImplemented
 
-    def replay(self, ltmemory):
-        """
-        lg.logger_mcts.info('******RETRAINING MODEL******')
 
-
-        for i in range(config.TRAINING_LOOPS):
-            minibatch = random.sample(ltmemory, min(config.BATCH_SIZE, len(ltmemory)))
-
-            training_states = np.array([self.model.convertToModelInput(row['state']) for row in minibatch])
-            training_targets = {'value_head': np.array([row['value'] for row in minibatch])
-                                , 'policy_head': np.array([row['AV'] for row in minibatch])}
-
-            fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size = 32)
-            lg.logger_mcts.info('NEW LOSS %s', fit.history)
-
-            self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1],4))
-            self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1],4))
-            self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1],4))
-
-        plt.plot(self.train_overall_loss, 'k')
-        plt.plot(self.train_value_loss, 'k:')
-        plt.plot(self.train_policy_loss, 'k--')
-
-        plt.legend(['train_overall_loss', 'train_value_loss', 'train_policy_loss'], loc='lower left')
-
-        display.clear_output(wait=True)
-        display.display(pl.gcf())
-        pl.gcf().clear()
-        time.sleep(1.0)
-
-        print('\n')
-        self.model.printWeightAverages()
-        """
-        raise NotImplemented
 
     def predict(self, inputToModel):
         """
