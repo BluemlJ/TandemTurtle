@@ -10,12 +10,23 @@ import logger as lg
 class Node:
 
     def __init__(self, state):
+        """
+        This initialize a Node in our MCTS Tree. Every Node holds a GameState (BoardSituation), a Playercolor, an ID and
+        his edges to the children.
+
+        :param state: The GameState
+        """
         self.state = state
         self.playerTurn = state.playerTurn
         self.id = state.id
         self.edges = []
 
     def isLeaf(self):
+        """
+        This method checks if the edges are 0, so the node is a leaf
+
+        :return: True or False (is leaf)
+        """
         if len(self.edges) > 0:
             return False
         else:
@@ -23,8 +34,18 @@ class Node:
 
 
 class Edge:
+    """
+    ...
+    """
 
     def __init__(self, inNode, outNode, prior, action):
+        """
+        ...
+        :param inNode:
+        :param outNode:
+        :param prior:
+        :param action:
+        """
         self.id = inNode.state.id + '|' + outNode.state.id
         self.inNode = inNode
         self.outNode = outNode
