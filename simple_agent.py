@@ -1,6 +1,29 @@
-class Agent():
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
+"""
+Contains class Simple_Agent
+Objects of Simple_Agent class are simple Bughouse players that do not use a
+trained model. The evaluation is done by a hard-coded evaluation function as defined in eval.py
+"""
 
+import numpy as np
+import random
+
+import mcts as mc
+import eval
+import logger as lg
+
+
+
+class Simple_Agent():
+    ##########
+    # param:
+    # name - agent name
+    # state size
+    # action size
+    # number of mcts simulations
+    # cpuct - exploration coefficient for uct
+    # model - the neural net. Not used in simple agent, but kept here for the purpose of later extension
+    ##########
+    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
         self.name = name
 
         self.state_size = state_size
@@ -9,13 +32,17 @@ class Agent():
         self.cpuct = cpuct
 
         self.MCTSsimulations = mcts_simulations
-        self.model = model
+        #self.model = model #use later
 
+        # mcts saves tree info and statistics.
         self.mcts = None
 
+    ##########
+    # do one simulation of a game and evaluate the outcome.
+    ##########
     def simulate(self):
 
-        """
+
         lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
         self.mcts.root.state.render(lg.logger_mcts)
         lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
@@ -29,26 +56,25 @@ class Agent():
 
         ##### BACKFILL THE VALUE THROUGH THE TREE
         self.mcts.back_fill(leaf, value, breadcrumbs)
-        """
-        raise NotImplemented
+
 
     def act(self, state, tau):
 
-        """
+
         if self.mcts == None or state.id not in self.mcts.tree:
-            self.buildMCTS(state)
+            self.build_mcts(state)
         else:
-            self.changeRootMCTS(state)
+            self.change_root_mcts(state)
 
         #### run the simulation
-        for sim in range(self.MCTSsimulations):
+        for sim in range(self.MCTSsimulations): #TODO use fixed time instead of fixed nr of simulations
             lg.logger_mcts.info('***************************')
             lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
             lg.logger_mcts.info('***************************')
             self.simulate()
 
         #### get action values
-        pi, values = self.getAV(1)
+        pi, values = self.get_action_value(1)
 
         ####pick the action
         action, value = self.chooseAction(pi, values, tau)
@@ -63,47 +89,27 @@ class Agent():
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
 
         return (action, pi, value, NN_value)
-        """
-        raise NotImplemented
 
 
-    def get_preds(self, state):
-        """
-        #predict the leaf
-        inputToModel = np.array([self.model.convertToModelInput(state)])
 
-        preds = self.model.predict(inputToModel)
-        value_array = preds[0]
-        logits_array = preds[1]
-        value = value_array[0]
 
-        logits = logits_array[0]
 
-        allowedActions = state.allowedActions
-
-        mask = np.ones(logits.shape,dtype=bool)
-        mask[allowedActions] = False
-        logits[mask] = -100
-
-        #SOFTMAX
-        odds = np.exp(logits)
-        probs = odds / np.sum(odds) ###put this just before the for?
-
-        return ((value, probs, allowedActions))
-        """
-        raise NotImplemented
 
     def evaluateLeaf(self, leaf, value, done, breadcrumbs):
 
-        """
+
         lg.logger_mcts.info('------EVALUATING LEAF------')
 
         if done == 0:
 
-            value, probs, allowedActions = self.get_preds(leaf.state)
+            #value, probs, allowedActions = self.get_preds(leaf.state)
+            allowedActions=leaf.state.allowedActions
+            parent_edge=leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
+            value = eval.eval_move(parent_edge.action, parent_edge.inNode)
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-            probs = probs[allowedActions]
+            probs = np.ones(allowedActions)#TODO: is this the right data type? array?
+            #probs = probs[allowedActions]
 
             for idx, action in enumerate(allowedActions):
                 newState, _, _ = leaf.state.take_action(action)
@@ -122,12 +128,11 @@ class Agent():
             lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
         return ((value, breadcrumbs))
-        """
-        raise NotImplemented
 
 
-    def getAV(self, tau):
-        """
+
+    def get_action_value(self, tau):
+
         edges = self.mcts.root.edges
         pi = np.zeros(self.action_size, dtype=np.integer)
         values = np.zeros(self.action_size, dtype=np.float32)
@@ -138,11 +143,10 @@ class Agent():
 
         pi = pi / (np.sum(pi) * 1.0)
         return pi, values
-        """
-        raise NotImplemented
+
 
     def chooseAction(self, pi, values, tau):
-        """
+
         if tau == 0:
             actions = np.argwhere(pi == max(pi))
             action = random.choice(actions)[0]
@@ -153,29 +157,19 @@ class Agent():
         value = values[action]
 
         return action, value
-        """
-        raise NotImplemented
 
 
+    def build_mcts(self, state):
 
-    def predict(self, inputToModel):
-        """
-        preds = self.model.predict(inputToModel)
-        return preds
-        """
-        raise NotImplemented
-
-    def buildMCTS(self, state):
-        """
         lg.logger_mcts.info('****** BUILDING NEW MCTS TREE FOR AGENT %s ******', self.name)
         self.root = mc.Node(state)
         self.mcts = mc.MCTS(self.root, self.cpuct)
-        """
+
         raise NotImplemented
 
-    def changeRootMCTS(self, state):
-        """
+    def change_root_mcts(self, state):
+
         lg.logger_mcts.info('****** CHANGING ROOT OF MCTS TREE TO %s FOR AGENT %s ******', state.id, self.name)
         self.mcts.root = self.mcts.tree[state.id]
-        """
+
         raise NotImplemented
