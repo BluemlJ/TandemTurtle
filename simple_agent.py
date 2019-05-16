@@ -57,53 +57,47 @@ class Simple_Agent():
         ##### BACKFILL THE VALUE THROUGH THE TREE
         self.mcts.back_fill(leaf, value, breadcrumbs)
 
-
     def act(self, state, tau):
 
 
         if self.mcts == None or state.id not in self.mcts.tree:
             self.build_mcts(state)
         else:
-            self.change_root_mcts(state)
+            self.change_root_mcts(state)#so that it doesnt have to be searched again.
 
         #### run the simulation
         for sim in range(self.MCTSsimulations): #TODO use fixed time instead of fixed nr of simulations
             lg.logger_mcts.info('***************************')
             lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
             lg.logger_mcts.info('***************************')
-            self.simulate()
+            self.simulate() #updates MCTS
 
         #### get action values
         pi, values = self.get_action_value(1)
 
         ####pick the action
-        action, value = self.chooseAction(pi, values, tau)
+        action, value = self.choose_action(pi, values, tau)
 
-        nextState, _, _ = state.takeAction(action)
+        nextState, _, _ = state.take_action(action)
 
-        NN_value = -self.get_preds(nextState)[0]
+        #NN_value = -self.get_preds(nextState)[0]
+        nn_value = 0# The Neural Net is not used yet anyway. Therefore the value is set to neutral.
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%d', action)
         lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
-        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
+        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', nn_value)
 
-        return (action, pi, value, NN_value)
+        return (action, pi, value, nn_value)
 
-
-
-
-
-
-    def evaluateLeaf(self, leaf, value, done, breadcrumbs):
-
+    def evaluate_leaf(self, leaf, value, done, breadcrumbs):
 
         lg.logger_mcts.info('------EVALUATING LEAF------')
 
         if done == 0:
 
             #value, probs, allowedActions = self.get_preds(leaf.state)
-            allowedActions=leaf.state.allowedActions
+            allowedActions = leaf.state.allowedActions
             parent_edge=leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
             value = eval.eval_move(parent_edge.action, parent_edge.inNode)
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
@@ -127,9 +121,7 @@ class Simple_Agent():
         else:
             lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
-        return ((value, breadcrumbs))
-
-
+        return (value, breadcrumbs)
 
     def get_action_value(self, tau):
 
@@ -144,20 +136,18 @@ class Simple_Agent():
         pi = pi / (np.sum(pi) * 1.0)
         return pi, values
 
-
-    def chooseAction(self, pi, values, tau):
+    def choose_action(self, pi, values, tau):
 
         if tau == 0:
             actions = np.argwhere(pi == max(pi))
             action = random.choice(actions)[0]
         else:
             action_idx = np.random.multinomial(1, pi)
-            action = np.where(action_idx==1)[0][0]
+            action = np.where(action_idx == 1)[0][0]
 
         value = values[action]
 
         return action, value
-
 
     def build_mcts(self, state):
 
