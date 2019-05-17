@@ -71,7 +71,8 @@ class GameState():
         return (position)
 
     def _convert_state_to_id(self):
-        raise NotImplementedError
+        s = self.boards.__str__()
+        id = "".join(s.split())
         return id
 
     def _check_for_end(self):
