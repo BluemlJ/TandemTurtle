@@ -95,8 +95,13 @@ class GameState:
         """
         :return: The game state as a binary numpy array including both boards and pockets
         """
-        raise NotImplementedError
-        return (position)
+        b1 = board_to_array(self.board).flatten()
+        b2 = board_to_array(self.partner_board).flatten()
+        pockets1 = [pocket_to_array(p) for p in self.board.pockets]
+        pockets2 = [pocket_to_array(p) for p in self.partner_board.pockets]
+
+        return np.concatenate([b1,pockets1[0],pockets1[1],b2,pockets2[0],pockets2[1]])
+
 
     def _convert_state_to_id(self):
         s = self.boards.__str__()
@@ -200,9 +205,17 @@ def board_to_array(board):
     The size should be:
     number of squares * number of possible figures * number of colors = 8*8*6*2
     :param board: single chess board
+
+    TODO
+    Can/should this be smaller?
     """
-    array = np.zeros((8, 8, 6, 2))
-    raise NotImplementedError
+    array = np.zeros((64, 6, 2))
+    for field,piece in board.piece_map().items():
+        p_type = piece.piece_type - 1
+        color = 1 if piece.color else 0
+        array[field][p_type][color] = 1
+
+    return array
 
 
 def pocket_to_array(pocket):
