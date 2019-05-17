@@ -3,6 +3,8 @@ This file contains the game rules.
 It gives the logic behind moving from one game state to another, given a chosen action. For example, given the intial board and the move g1f3, the "takeAction" method return a new game state, with the move played.
 You can replace the game.py file with any game file that conforms to the same API and the algorithm will in principal, learn strategy through self play, based on the rules you have given it.
 """
+import copy
+
 import chess
 import numpy as np
 import logging
@@ -12,6 +14,10 @@ from chess.variant import BughouseBoards, SingleBughouseBoard
 # board_number  0 for left 1 for right board
 class Game:
     def __init__(self, board_number):
+        """
+
+        :param board_number: 0 for left 1 for right board
+        """
         self.board_number = board_number
         self.currentPlayer = 1
         boards = BughouseBoards()
@@ -21,12 +27,13 @@ class Game:
         self.name = 'bughouse'
 
         self.action_size = len(self.actionSpace)
-        """
-        TODO
         self.state_size = len(self.gameState.binary)
+
+        """
+        TODO Do we need this stuff?
         self.pieces = {'1':'X', '0': '-', '-1':'O'}
-		self.grid_shape = (6,7)
-		self.input_shape = (2,6,7)
+        self.grid_shape = (6,7)
+        self.input_shape = (2,6,7)
         """
 
     def reset(self):
@@ -43,37 +50,57 @@ class Game:
         return ((next_state, value, done, info))
 
 
-class GameState():
-    def __init__(self, boards, board_number, playerTurn):
+class GameState:
+    """
+    The gamestate consists out of both Bughouse Boards.
+    The board number decides on which board the engine is playing
+    Moves/actions are passed as numpy arrays.
+
+    TODO:
+    -implement binary
+    -functions to update partner board
+    -Do we really need the representation as numpy arrays for the actions?
+    """
+
+    def __init__(self, boards, board_number, player_turn):
+        """
+        :param boards: BughouseBoards
+        :param board_number: 0 for left 1 for right board
+        :param player_turn: 1 white -1 black
+        """
         self.boards = boards
         self.board_number = board_number
+
         self.board = boards.boards[board_number]
+
         if board_number == 1:
             self.partner_board = boards.boards[0]
         else:
             self.partner_board = boards.boards[1]
 
-        self.playerTurn = playerTurn  # 1 = white -1 = black
+        self.playerTurn = player_turn
 
         self.binary = self._binary()
         self.id = self._convert_state_to_id()
         self.allowedActions = self._allowed_actions()
         self.isEndGame = self._check_for_end()
         self.value = self._get_value()
-        self.score = self._get_score()
+
 
     def _allowed_actions(self):
         allowed = [move_as_array(m) for m in list(self.board.legal_moves)]
         return allowed
 
     def _binary(self):
+        """
+        :return: The game state as a binary numpy array including both boards and pockets
+        """
         raise NotImplementedError
         return (position)
 
     def _convert_state_to_id(self):
         s = self.boards.__str__()
-        id = "".join(s.split())
-        return id
+        return "".join(s.split())
 
     def _check_for_end(self):
         if self.boards.is_game_over():
@@ -81,7 +108,9 @@ class GameState():
         return 0
 
     def _get_value(self):
-        # return (state, currentPlayerPoints, opponentPlayerPoints)
+        """
+        :return: (state, currentPlayerPoints, opponentPlayerPoints)
+        """
         result = self.boards.result()
         if result == "1/2-1/2":
             return (0, 0.5, 0.5)
@@ -90,7 +119,7 @@ class GameState():
                 return (-1, -1, 1)
             else:
                 return (1, 1, -1)
-        else:
+        elif result == "1-0":
             if self.playerTurn == -1:
                 return (-1, -1, 1)
             else:
@@ -99,6 +128,11 @@ class GameState():
         return (0, 0, 0)
 
     def take_action(self, action):
+        """
+        creates a new gamestate by copying this state and making a move
+        :param action:  action as np array
+        :return: newState, value, done
+        """
         move = array_as_move(action)
         new_boards = copy.deepcopy(self.boards)
         new_boards.boards[self.board_number].push(move)
@@ -119,8 +153,18 @@ class GameState():
         logger.info('--------------')
 
 
-# colour necessary for drops
+"""
+Helper functions to convert python-chess representations to numpy arrays.
+"""
+
+
 def move_as_array(move, color=chess.WHITE):
+    """
+    Converts a python-chess move to a numpy array. The color is relevant for drops.
+    :param move: a python-chess move
+    :param color: chess.WHITE / 1 or chess.BLACK / 0
+    :return: a numpy array (135,)
+    """
     move_array = np.zeros(
         128 + 6 + 1)  # first 64 from square second 64 to_ square + 6 for the drop piece + 1 for colour
     move_array[move.from_square] = 1
@@ -135,6 +179,11 @@ def move_as_array(move, color=chess.WHITE):
 
 
 def array_as_move(action):
+    """
+    Converts a numpy array to a python-chess move.
+    :param action: move as a numpy array (135,)  see move_as_array
+    :return: python-chess move
+    """
     fromSquare = np.argmax(action[0:64])
     toSquare = np.argmax(action[64:128])
     if np.max(action[128:]) > 0:  # move is a drop
@@ -146,11 +195,20 @@ def array_as_move(action):
 
 
 def board_to_array(board):
-    array = np.zeros((8, 8, 6, 2))#??
+    """
+    Converts a single board without pockets to a binary numpy array
+    The size should be:
+    number of squares * number of possible figures * number of colors = 8*8*6*2
+    :param board: single chess board
+    """
+    array = np.zeros((8, 8, 6, 2))
     raise NotImplementedError
 
 
 def pocket_to_array(pocket):
+    """
+    Converts a pocket of a SingleBughouseBoard to a numpy array (6,).
+    """
     d = dict(pocket.pieces)
     array = np.zeros(6)
     for piece, count in d.items():
