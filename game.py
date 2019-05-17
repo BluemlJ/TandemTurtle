@@ -191,7 +191,7 @@ def array_as_move(action):
     """
     fromSquare = np.argmax(action[0:64])
     toSquare = np.argmax(action[64:128])
-    if np.max(action[128:]) > 0:  # move is a drop
+    if np.max(action[128:-1]) > 0:  # move is a drop
         color = action[-1]
         piece = chess.Piece(np.argmax(action[128:-1]) + 1, color)
         return chess.Move.from_uci(piece.symbol() + "@" + chess.SQUARE_NAMES[toSquare])
