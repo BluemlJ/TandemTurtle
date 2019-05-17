@@ -148,10 +148,6 @@ def board_to_array(board):
     array = np.zeros((8, 8, 6, 2))#??
     raise NotImplementedError
 
-def render(self, logger): #TODO: should this be here? (merge)
-		for r in range(8):
-			logger.info([self.pieces[str(x)] for x in self.board[r][0:7]])
-		logger.info('--------------')
 
 def pocket_to_array(pocket):
     d = dict(pocket.pieces)
