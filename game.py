@@ -57,7 +57,7 @@ class GameState:
     Moves/actions are passed as numpy arrays.
 
     TODO:
-    -implement binary
+    -id does not include whether kings/rooks moved
     -functions to update partner board
     -Do we really need the representation as numpy arrays for the actions?
     """
@@ -138,9 +138,14 @@ class GameState:
         :param action:  action as np array
         :return: newState, value, done
         """
+
+        new_boards = BughouseBoards()
+        for move in self.boards._move_stack:
+            new_boards.push(move)
+
+        new_board = new_boards.boards[self.board_number]
         move = array_as_move(action)
-        new_boards = copy.deepcopy(self.boards)
-        new_boards.boards[self.board_number].push(move)
+        new_board.push(move)
 
         newState = GameState(new_boards, self.board_number, -self.playerTurn)
 
