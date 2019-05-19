@@ -140,8 +140,12 @@ class GameState:
         """
 
         new_boards = BughouseBoards()
-        for move in self.boards._move_stack:
-            new_boards.push(move)
+        left = new_boards[0]
+        right = new_boards[1]
+        for move in self.boards.boards[0].move_stack:
+            left.push(move)
+        for move in self.boards.boards[1].move_stack:
+            right.push(move)
 
         new_board = new_boards.boards[self.board_number]
         move = array_as_move(action)
