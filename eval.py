@@ -74,7 +74,11 @@ def eval_move(move, board):
     :param board: board in format XXX, where to eval move on  TODO add
     :return: Value of move
     """
-    return NotImplementedError
+    print(move)
+    print(board)
+    print(board.state)
+    print(board.state.board)
+
     print("NOT USEFULL ATM")
     i, j = move
     piece, q = board[i], board[j]

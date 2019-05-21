@@ -9,7 +9,7 @@ import random
 
 import mcts as mc
 import eval
-import logger as lg
+# import logger as lg
 
 
 
@@ -43,13 +43,13 @@ class Simple_Agent():
     def simulate(self):
 
 
-        lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
-        self.mcts.root.state.render(lg.logger_mcts)
-        lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
+        # lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
+        # self.mcts.root.state.render(lg.logger_mcts)
+        # lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
 
         ##### MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
-        leaf.state.render(lg.logger_mcts)
+        # leaf.state.render(lg.logger_mcts)
 
         ##### EVALUATE THE LEAF NODE
         value, breadcrumbs = self.evaluate_leaf(leaf, value, done, breadcrumbs)
@@ -67,9 +67,9 @@ class Simple_Agent():
 
         #### run the simulation
         for sim in range(self.MCTSsimulations): #TODO use fixed time instead of fixed nr of simulations
-            lg.logger_mcts.info('***************************')
-            lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
-            lg.logger_mcts.info('***************************')
+            # lg.logger_mcts.info('***************************')
+            # lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
+            # lg.logger_mcts.info('***************************')
             self.simulate() #updates MCTS
 
         #### get action values
@@ -93,16 +93,21 @@ class Simple_Agent():
     def evaluate_leaf(self, leaf, value, done, breadcrumbs):
 
         lg.logger_mcts.info('------EVALUATING LEAF------')
-
         if done == 0:
 
             #value, probs, allowedActions = self.get_preds(leaf.state)
-            allowedActions = leaf.state.allowedActions
-            parent_edge=leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
-            value = eval.eval_move(parent_edge.action, parent_edge.inNode)
+            allowedActions = np.array(leaf.state.allowedActions)
+            print(allowedActions)
+            # In first run leaf is empty so set value to fixed value
+            if leaf.edges:
+                parent_edge = leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
+                value = eval.eval_move(parent_edge.action, parent_edge.inNode)
+            else:
+                value = 100     # TODO what value?
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-            probs = np.ones(allowedActions)#TODO: is this the right data type? array?
+            print(allowedActions.shape)
+            probs = np.ones(allowedActions.shape[0])#TODO: is this the right data type? array?
             #probs = probs[allowedActions]
 
             for idx, action in enumerate(allowedActions):
@@ -124,12 +129,15 @@ class Simple_Agent():
         return (value, breadcrumbs)
 
     def get_action_value(self, tau):
+        print("Tau: ", tau)
 
         edges = self.mcts.root.edges
         pi = np.zeros(self.action_size, dtype=np.integer)
         values = np.zeros(self.action_size, dtype=np.float32)
 
         for action, edge in edges:
+            # Todo will only take first argmax, but several ones in actions
+            action = np.argmax(action)
             pi[action] = pow(edge.stats['N'], 1/tau)
             values[action] = edge.stats['Q']
 
@@ -155,11 +163,7 @@ class Simple_Agent():
         self.root = mc.Node(state)
         self.mcts = mc.MCTS(self.root, self.cpuct)
 
-        raise NotImplemented
-
     def change_root_mcts(self, state):
 
         lg.logger_mcts.info('****** CHANGING ROOT OF MCTS TREE TO %s FOR AGENT %s ******', state.id, self.name)
         self.mcts.root = self.mcts.tree[state.id]
-
-        raise NotImplemented

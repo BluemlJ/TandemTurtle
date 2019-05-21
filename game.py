@@ -43,7 +43,7 @@ class Game:
         return self.gameState
 
     def step(self, action):
-        next_state, value, done = self.gameState.takeAction(action)
+        next_state, value, done = self.gameState.take_action(action)
         self.gameState = next_state
         self.currentPlayer = -self.currentPlayer
         info = None
@@ -85,7 +85,6 @@ class GameState:
         self.allowedActions = self._allowed_actions()
         self.isEndGame = self._check_for_end()
         self.value = self._get_value()
-
 
     def _allowed_actions(self):
         allowed = [move_as_array(m) for m in list(self.board.legal_moves)]
@@ -132,12 +131,30 @@ class GameState:
 
         return (0, 0, 0)
 
+    def check_if_legal(self, action):
+        """
+        Check if move at current game state is correct and for current player playable
+        :param action: action as np array
+        :return: True if legal, raise Exception otherwise
+        """
+        is_legal_move = np.any([(action == el).all() for el in self._allowed_actions()])
+        if not is_legal_move:
+            # TODO make Exception as concrete as possible, maybe own class
+            print("allowed actions ", [array_as_move(el) for el in self._allowed_actions()])
+            print("action itself: ", action)
+            raise Exception(f"Illegal Move: {array_as_move(action)} {action} Legal Moves: ",
+                            [array_as_move(el) for el in self._allowed_actions()])
+        return True
+
     def take_action(self, action):
         """
         creates a new gamestate by copying this state and making a move
         :param action:  action as np array
         :return: newState, value, done
         """
+
+        # Checks if move is correct
+        self.check_if_legal(action)
 
         new_boards = BughouseBoards()
         left = new_boards[0]

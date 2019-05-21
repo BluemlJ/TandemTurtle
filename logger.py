@@ -12,7 +12,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
-    handler = logging.FileHandler(log_file)        
+    handler = logging.FileHandler(log_file)
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
@@ -21,6 +21,7 @@ def setup_logger(name, log_file, level=logging.INFO):
         logger.addHandler(handler)
     return logger
 
+    
 
 ### SET all LOGGER_DISABLED to True to disable logging
 ### WARNING: the mcts log file gets big quite quickly

@@ -1,16 +1,16 @@
-"""
-This is where you set the key parameters that influence the algorithm.
 
-f.e
+# This is where you set the key parameters that influence the algorithm.
+
+# f.e
 
 #### SELF PLAY
 EPISODES = 30
-MCTS_SIMS = 50
+MCTS_SIMS = 10
 MEMORY_SIZE = 30000
 TURNS_UNTIL_TAU0 = 10 # turn on which it starts playing deterministically
 CPUCT = 1
 
-
+"""
 
 #### RETRAINING
 BATCH_SIZE = 256
