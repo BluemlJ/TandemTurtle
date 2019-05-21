@@ -94,14 +94,14 @@ class MCTS:
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
-                # Todo: I replaced np.log(Nb) with Nb since it will Nan else
+                # Todo: I replaced np.logs(Nb) with Nb since it will Nan else
                 U = self.cpuct * \
                     edge.stats['P'] * \
                     np.sqrt(Nb) / (1 + edge.stats['N'])
 
                 Q = edge.stats['Q']
 
-                lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
+                lg.logger_mcts.info('action: %s (%s)... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
                     , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
                     , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
@@ -111,7 +111,7 @@ class MCTS:
                     simulationAction = action
                     simulationEdge = edge
 
-            lg.logger_mcts.info('action with highest Q + U...%d', simulationAction)
+            lg.logger_mcts.info('action with highest Q + U...%s', simulationAction)
 
             newState, value, done = currentNode.state.take_action(simulationAction)
             # the value of the newState from the POV of the new playerTurn

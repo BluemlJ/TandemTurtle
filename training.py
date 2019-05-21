@@ -39,7 +39,7 @@ from settings import run_folder, run_archive_folder
 import initialise
 import pickle
 
-lg.logger_main.info('new log--------------------------------------------'))
+lg.logger_main.info('new logs--------------------------------------------'))
 
 env = Game()
 

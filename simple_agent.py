@@ -9,7 +9,7 @@ import random
 
 import mcts as mc
 import eval
-# import logger as lg
+import logger as lg
 
 
 
