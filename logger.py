@@ -16,7 +16,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     if not logger.handlers:
         logger.addHandler(handler)
 
-return logger
+    return logger
 
 from config import run_folder
 
