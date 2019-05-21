@@ -163,11 +163,8 @@ class Simple_Agent():
         self.root = mc.Node(state)
         self.mcts = mc.MCTS(self.root, self.cpuct)
 
-        # raise NotImplemented
-
     def change_root_mcts(self, state):
 
         # lg.logger_mcts.info('****** CHANGING ROOT OF MCTS TREE TO %s FOR AGENT %s ******', state.id, self.name)
         self.mcts.root = self.mcts.tree[state.id]
 
-        # raise NotImplemented
