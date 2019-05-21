@@ -4,6 +4,10 @@ To turn on logging, set the values of the logger_disabled variables to False ins
 Viewing the log files will help you to understand how the algorithm works and see inside its ‘mind’.
 """
 
+import logging
+from config import run_folder
+
+
 def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -15,10 +19,8 @@ def setup_logger(name, log_file, level=logging.INFO):
     logger.setLevel(level)
     if not logger.handlers:
         logger.addHandler(handler)
+    return logger
 
-return logger
-
-from config import run_folder
 
 ### SET all LOGGER_DISABLED to True to disable logging
 ### WARNING: the mcts log file gets big quite quickly
