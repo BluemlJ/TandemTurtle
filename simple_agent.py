@@ -43,9 +43,9 @@ class Simple_Agent():
     def simulate(self):
 
 
-        # lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
-        # self.mcts.root.state.render(lg.logger_mcts)
-        # lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
+        lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
+        self.mcts.root.state.render(lg.logger_mcts)
+        lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
 
         ##### MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
@@ -67,9 +67,9 @@ class Simple_Agent():
 
         #### run the simulation
         for sim in range(self.MCTSsimulations): #TODO use fixed time instead of fixed nr of simulations
-            # lg.logger_mcts.info('***************************')
-            # lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
-            # lg.logger_mcts.info('***************************')
+            lg.logger_mcts.info('***************************')
+            lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
+            lg.logger_mcts.info('***************************')
             self.simulate() #updates MCTS
 
         #### get action values
