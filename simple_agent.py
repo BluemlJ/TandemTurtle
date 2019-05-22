@@ -38,7 +38,7 @@ class Simple_Agent():
         self.mcts = None
 
     ##########
-    # do one simulation of a game and evaluate the outcome.
+    # do one simulation of a game and evaluate the outcome. Update the MC search tree in the progress.
     ##########
     def simulate(self):
 
@@ -55,6 +55,7 @@ class Simple_Agent():
 
         ##### BACKFILL THE VALUE THROUGH THE TREE
         self.mcts.back_fill(leaf, value, breadcrumbs)
+
     ####
     # act - run simulations updating the MC-search-tree. Then pick an action.
     # param:
@@ -83,11 +84,13 @@ class Simple_Agent():
             lg.logger_mcts.info('***************************')
             self.simulate() #updates MCTS
 
-        #### get action values
-        pi, values = self.get_action_values(1)
+        #### get action values. pi is a probability distribution over the visited nodes.
+        # pi, values = self.get_action_values(1)
+        pi, _ = self.get_action_values(1)
 
-        #### pick the action
-        action, value = self.choose_action(pi, values, tau)
+        #### pick the action where pi is max.
+        # action, value = self.choose_action(pi, values, tau) #Todo (later) what do we need the value for?
+        action = self.choose_action(pi, None, tau)
 
         #nextState, _, _ = state.take_action(action) #only needed for nn_value
 
@@ -96,14 +99,15 @@ class Simple_Agent():
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%d', action)
-        lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
+        # lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', nn_value)
 
-        return (action, pi, value, nn_value)
+        # return (action, pi, value, nn_value)
+        return (action, pi, None, nn_value)
 
     ####
     # evaluate_leaf: .
-    def evaluate_leaf(self, leaf, eval_value, done, breadcrumbs):#TODO: delete breadcrumbs, its not used, is it?
+    def evaluate_leaf(self, leaf, eval_value, done, breadcrumbs):#TODO (later): delete breadcrumbs, its not used, is it?
 
         lg.logger_mcts.info('------EVALUATING LEAF------')
         if done == 0:
@@ -138,12 +142,12 @@ class Simple_Agent():
                 newEdge = mc.Edge(leaf, node, probs[idx], action)
                 leaf.edges.append((action, newEdge))
         '''
-        else:#after evaluation is done
+        else:#after evaluation is done (done ==1)
             lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, eval_value)
 
         return (eval_value, breadcrumbs)
 
-    def get_action_values(self, tau):
+    def get_action_values(self, tau): #TODO: get rid of this tau or give it a better name after we know what it does
         print("Tau: ", tau)
 
         edges = self.mcts.root.edges
@@ -153,24 +157,30 @@ class Simple_Agent():
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
             action = np.argmax(action)
-            pi[action] = pow(edge.stats['N'], 1/tau)
-            values[action] = edge.stats['Q']
+            pi[action] = pow(edge.stats['N'], 1/tau) #TODO (later) why not use p[action = edge.stats['N'] directly?
+            values[action] = edge.stats['Q'] #not used.
 
-        pi = pi / (np.sum(pi) * 1.0)
+        pi = pi / (np.sum(pi) * 1.0) # normalize pi to sum up to 1 (probability distribution)
         return pi, values
 
+    ####
+    # choose_action: pick the action where pi is max.
+    # param: pi, values (map actions to their values), tau
+    # return: action and its corresponding value
+    ####
     def choose_action(self, pi, values, tau):
 
-        if tau == 0:
+        if tau == 0:#deterministic
             actions = np.argwhere(pi == max(pi))
-            action = random.choice(actions)[0]
+            action = random.choice(actions)[0] # break ties randomly.
         else:
             action_idx = np.random.multinomial(1, pi)
             action = np.where(action_idx == 1)[0][0]
 
-        value = values[action]
+        # value = values[action]
 
-        return action, value
+        return action
+        # return action, value
 
     def build_mcts(self, state):
 
