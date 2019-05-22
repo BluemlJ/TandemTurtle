@@ -179,12 +179,13 @@ class Simple_Agent():
     ####
     def choose_action(self, pi, values, tau):
         inverse = [(value, key) for key, value in pi.items()]
+        pi_values = [value for value, key in inverse]
 
         if tau == 0:    # deterministic
-            actions = [x[1] for i, x in enumerate(inverse) if x[0] == max(inverse)[0]]
-            action = random.choice(actions)     # break ties randomly.
+            action_idx = [i for i, x in enumerate(pi_values) if x == max(pi_values)]
+            actions = [inverse[idx][1] for idx in action_idx]
+            action = random.choice(actions)
         else:
-            pi_values = [value for value, key in inverse]
             value_idx_arr = np.random.multinomial(1, pi_values)
             value_idx = np.where(value_idx_arr == 1)[0][0]
             action = inverse[value_idx][1]
