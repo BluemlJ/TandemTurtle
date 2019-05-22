@@ -98,7 +98,7 @@ class Simple_Agent():
         nn_value = 0# The Neural Net is not used yet anyway. Therefore the value is set to neutral.
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
-        lg.logger_mcts.info('CHOSEN ACTION...%d', action)
+        lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         # lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', nn_value)
 
@@ -163,8 +163,8 @@ class Simple_Agent():
             # Todo will only take first argmax, but several ones in actions
             pi_val = pow(edge.stats['N'], 1/tau) #TODO (later) why not use p[action = edge.stats['N'] directly?
             pi_total += pi_val
-            pi[str(action)] = pi_val
-            values[str(action)] = edge.stats['Q']
+            pi[action] = pi_val
+            values[action] = edge.stats['Q']
 
         if pi_total == 0:
             pi_total = 1
