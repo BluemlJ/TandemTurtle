@@ -112,9 +112,9 @@ class Simple_Agent():
         lg.logger_mcts.info('------EVALUATING LEAF------')
         if done == 0:
 
-            #value, probs, allowedActions = self.get_preds(leaf.state)
-            '''allowedActions = np.array(leaf.state.allowedActions) # no rollouts. use static eval fct instead
-            print(allowedActions)'''
+            allowedActions = np.array(leaf.state.allowedActions) # no rollouts. use static eval fct instead
+            print(allowedActions)
+
             # In first run leaf is empty so set value to fixed value
             if leaf.edges:
                 parent_edge = leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
@@ -124,7 +124,7 @@ class Simple_Agent():
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, eval_value)
 
             # no rollouts. use static eval fctn
-            '''
+
             print("allowedActions.shape = ", allowedActions.shape)
             probs = np.ones(allowedActions.shape[0])#TODO: is this the right data type? array?
             #probs = probs[allowedActions]
@@ -141,7 +141,7 @@ class Simple_Agent():
 
                 newEdge = mc.Edge(leaf, node, probs[idx], action)
                 leaf.edges.append((action, newEdge))
-        '''
+
         else:#after evaluation is done (done ==1)
             lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, eval_value)
 
@@ -174,6 +174,7 @@ class Simple_Agent():
             pi[key] = value / (pi_total * 1.0)
 
         return pi, values
+
 
     ####
     # choose_action: pick the action where pi is max.
