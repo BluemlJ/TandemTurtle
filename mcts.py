@@ -101,9 +101,9 @@ class MCTS:
 
                 Q = edge.stats['Q']
 
-                lg.logger_mcts.info('action: %s (%s)... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                    , action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
-                    , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
+                # lg.logger_mcts.info('N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
+                #     , edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
+                #     , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
                 print(Q, U)
                 if Q + U > maxQU:
