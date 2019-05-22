@@ -23,7 +23,7 @@ agent3 = Simple_Agent('agent3', env.state_size, env.action_size, config.MCTS_SIM
 agent4 = Simple_Agent('agent4', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, None)
 agents = [agent1, agent2, agent3, agent4]
 
-funcs.play_matches(agents, config.EPISODES, None,
+funcs.play_matches(agents, config.EPISODES, lg.logger_main,
                    turns_until_tau0=config.TURNS_UNTIL_TAU0)
 
 exit()

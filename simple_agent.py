@@ -70,7 +70,6 @@ class Simple_Agent():
     # .
 
     def act(self, state, tau):
-        print("act with tau = %d",tau)
         #### go to mcts node that corresponds to state or build new mcts.
         if self.mcts == None or state.id not in self.mcts.tree:
             self.build_mcts(state)
@@ -113,7 +112,6 @@ class Simple_Agent():
         if done == 0:
 
             allowedActions = np.array(leaf.state.allowedActions) # no rollouts. use static eval fct instead
-            print(allowedActions)
 
             # In first run leaf is empty so set value to fixed value
             if leaf.edges:
@@ -126,7 +124,6 @@ class Simple_Agent():
 
             # no rollouts. use static eval fctn
 
-            print("allowedActions.shape = ", allowedActions.shape)
             probs = np.ones(allowedActions.shape[0])#TODO: is this the right data type? array?
             #probs = probs[allowedActions]
 
@@ -149,7 +146,6 @@ class Simple_Agent():
         return (eval_value, breadcrumbs)
 
     def get_action_values(self, tau): #TODO: get rid of this tau or give it a better name after we know what it does
-        print("Tau: ", tau)
 
         edges = self.mcts.root.edges
         # old:

@@ -105,7 +105,6 @@ class MCTS:
                     , action, edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
                     , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
-                print(Q, U)
                 if Q + U > maxQU:
                     maxQU = Q + U
                     simulationAction = action
@@ -120,7 +119,6 @@ class MCTS:
 
         lg.logger_mcts.info('DONE...%d', done)
 
-        print("Return in move to leaf: ", currentNode, value, done, breadcrumbs)
         return currentNode, value, done, breadcrumbs
 
     def back_fill(self, leaf, value, breadcrumbs):

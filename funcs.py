@@ -94,11 +94,10 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
             else:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
 
+
             print(action)
             # Do the action
             state, value, done, _ = env.step(action)
-
-            print(state)
 
             # the value of the newState from the POV of the new playerTurn
             # i.e. -1 if the previous player played a winning move
