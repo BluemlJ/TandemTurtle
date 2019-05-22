@@ -6,11 +6,16 @@ Viewing the logs files will help you to understand how the algorithm works and s
 
 import logging
 from config import run_folder
+import os
 
 
 def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    cur_path = os.getcwd()
+    folder_path = cur_path + "/run/logs/"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
     handler = logging.FileHandler(log_file)
     handler.setFormatter(formatter)

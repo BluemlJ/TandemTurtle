@@ -152,16 +152,28 @@ class Simple_Agent():
         print("Tau: ", tau)
 
         edges = self.mcts.root.edges
-        pi = np.zeros(self.action_size, dtype=np.integer)
-        values = np.zeros(self.action_size, dtype=np.float32)
+        # old:
+        # pi = np.zeros(self.action_size, dtype=np.integer)
+        # values = np.zeros(self.action_size, dtype=np.float32)
+        pi = {}
+        values = {}
+        pi_total = 0
 
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
             action = np.argmax(action)
-            pi[action] = pow(edge.stats['N'], 1/tau) #TODO (later) why not use p[action = edge.stats['N'] directly?
-            values[action] = edge.stats['Q'] #not used.
+            pi_val = pow(edge.stats['N'], 1/tau) #TODO (later) why not use p[action = edge.stats['N'] directly?
+            pi_total += pi_val
+            pi[str(action)] = pi_val
+            values[str(action)] = edge.stats['Q']
 
-        pi = pi / (np.sum(pi) * 1.0) # normalize pi to sum up to 1 (probability distribution)
+        if pi_total == 0:
+            pi_total = 1
+
+        for key, value in pi.items():
+            # normalize pi to sum up to 1 (probability distribution)
+            pi[key] = value / (pi_total * 1.0)
+
         return pi, values
 
 
@@ -171,13 +183,16 @@ class Simple_Agent():
     # return: action and its corresponding value
     ####
     def choose_action(self, pi, values, tau):
+        inverse = [(value, key) for key, value in pi.items()]
 
-        if tau == 0:#deterministic
-            actions = np.argwhere(pi == max(pi))
-            action = random.choice(actions)[0] # break ties randomly.
+        if tau == 0:    # deterministic
+            actions = [x[1] for i, x in enumerate(inverse) if x[0] == max(inverse)[0]]
+            action = random.choice(actions)     # break ties randomly.
         else:
-            action_idx = np.random.multinomial(1, pi)
-            action = np.where(action_idx == 1)[0][0]
+            pi_values = [value for value, key in inverse]
+            value_idx_arr = np.random.multinomial(1, pi_values)
+            value_idx = np.where(value_idx_arr == 1)[0][0]
+            action = inverse[value_idx][1]
 
         # value = values[action]
 
