@@ -94,45 +94,19 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
             else:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
 
-            """
-            if memory != None:
-                ####Commit the move to memory
-                memory.commit_stmemory(env.identities, state, pi)
-
-            logger.info('action: %d', action)
-            for r in range(env.grid_shape[0]):
-                logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x, 2)) for x in
-                             pi[env.grid_shape[1] * r: (env.grid_shape[1] * r + env.grid_shape[1])]])
-            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)], np.round(MCTS_value, 2))
-            logger.info('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)], np.round(NN_value, 2))
-            logger.info('====================')
-            """
-
             print(action)
             # Do the action
             state, value, done, _ = env.step(action)
 
             print(state)
-            # TODO eval and check if its working
-            exit()
+
             # the value of the newState from the POV of the new playerTurn
             # i.e. -1 if the previous player played a winning move
 
             # env.gameState.render(logger)
 
             # Updates scores and loggs if someone won
-            """
             if done == 1:
-                if memory != None:
-                    #### If the game is finished, assign the values correctly to the game moves
-                    for move in memory.stmemory:
-                        if move['playerTurn'] == state.playerTurn:
-                            move['value'] = value
-                        else:
-                            move['value'] = -value
-
-                    memory.commit_ltmemory()
-
                 if value == 1:
                     logger.info('%s WINS!', players[state.playerTurn]['name'])
                     scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1
@@ -158,5 +132,4 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
                 pts = state.score
                 points[players[state.playerTurn]['name']].append(pts[0])
                 points[players[-state.playerTurn]['name']].append(pts[1])
-            """
     return scores, points, sp_scores
