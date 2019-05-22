@@ -65,8 +65,8 @@ for k, table in pst.items():
     pst[k] = (0,)*20 + pst[k] + (0,)*20
 
 def simple_eval_gamestate(state):
-    nr_pieces_current_player =(sum(len(list(state.board.pieces(i,state.player_turn)))) for i in range(1,7))
-    nr_pieces_opponent = (sum(len(list(state.board.pieces(i,state.player_turn*(-1))))) for i in range(1,7))
+    nr_pieces_current_player =sum(len(list(state.board.pieces(i,state.player_turn))) for i in range(1,7))
+    nr_pieces_opponent = sum(len(list(state.board.pieces(i,state.player_turn*(-1)))) for i in range(1,7))
     score = nr_pieces_current_player/nr_pieces_opponent
     return score
 
