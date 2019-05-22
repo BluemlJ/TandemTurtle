@@ -101,7 +101,6 @@ class GameState:
 
         return np.concatenate([b1,pockets1[0],pockets1[1],b2,pockets2[0],pockets2[1]])
 
-
     def _convert_state_to_id(self):
         s = self.boards.__str__()
         return "".join(s.split())
@@ -137,7 +136,7 @@ class GameState:
         :param action: action as chess move
         :return: True if legal, raise Exception otherwise
         """
-        is_legal_move = np.any([(action == el).all() for el in self._allowed_actions()])
+        is_legal_move = np.any([(str(action) == str(el)) for el in self._allowed_actions()])
         if not is_legal_move:
             # TODO make Exception as concrete as possible, maybe own class
             print("allowed actions ", self._allowed_actions())

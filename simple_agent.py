@@ -160,7 +160,6 @@ class Simple_Agent():
 
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
-            action = np.argmax(action)
             pi_val = pow(edge.stats['N'], 1/tau) #TODO (later) why not use p[action = edge.stats['N'] directly?
             pi_total += pi_val
             pi[str(action)] = pi_val
