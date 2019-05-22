@@ -119,6 +119,7 @@ class Simple_Agent():
             if leaf.edges:
                 parent_edge = leaf.edges[0]# TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
                 eval_value = eval.eval_move(parent_edge.action, parent_edge.inNode)
+                eval.simple_eval_gamestate(leaf.state)
             else:
                 eval_value = 100     # TODO (later) what value?
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, eval_value)
