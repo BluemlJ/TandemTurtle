@@ -17,7 +17,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    handler = logging.FileHandler(log_file)
+    handler = logging.FileHandler(log_file, mode='w')
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)

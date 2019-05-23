@@ -75,15 +75,15 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
             players = {1: {"agent": player1, "name": player1.name}
                 , -1: {"agent": player2, "name": player2.name}
                        }
-            # logger.info(player1.name + ' plays as X')
+            logger.info(player1.name + ' plays as X')
         else:
             players = {1: {"agent": player2, "name": player2.name}
                 , -1: {"agent": player1, "name": player1.name}
                        }
-            # logger.info(player2.name + ' plays as X')
-            # logger.info('--------------')
+            logger.info(player2.name + ' plays as X')
+            logger.info('--------------')
 
-        # env.gameState.render(logger)
+        env.gameState.render(logger)
 
         while done == 0:
             turn = turn + 1
@@ -96,13 +96,16 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
 
 
             print(action)
+            logger.info(f"move {action} was played by {players[state.playerTurn]['name']}")
+
+
             # Do the action
             state, value, done, _ = env.step(action)
 
             # the value of the newState from the POV of the new playerTurn
             # i.e. -1 if the previous player played a winning move
 
-            # env.gameState.render(logger)
+            env.gameState.render(logger)
 
             # Updates scores and loggs if someone won
             if done == 1:
