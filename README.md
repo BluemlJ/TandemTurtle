@@ -11,7 +11,7 @@ To run on the server (and see the match visualized 'in action'), please:
   * run the frontend by changing to `vue-frontend` folder and running `npm run serve`
   * open a webbrowser on `localhost:8080`
   * start our program by running `python3 main.py`
-  * type in `go` in the server console
+  * type in `go` in the server console or click on `go` in the frontend
   * watch a beautiful game of bughouse chess in action!
 
 
