@@ -40,8 +40,8 @@ def playMatchesBetweenVersions(env, run_version, player1version, player2version,
 def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
     # TODO include player3, 4 and do something with env2
     player1 = players[0]
-    player2 = players[1]
-    player3 = players[2]
+    player2 = players[2]
+    player3 = players[1]
     player4 = players[3]
 
     env = Game(0)
@@ -94,8 +94,9 @@ def play_matches(players, number_games, logger, turns_until_tau0, goes_first=1):
             else:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
 
-
-            print(action)
+            # send message
+            players[state.playerTurn]['agent'].interface.sendAction(action)
+            
             # Do the action
             state, value, done, _ = env.step(action)
 
