@@ -102,7 +102,7 @@ class GameState:
 
     def _convert_state_to_id(self):
         s = self.boards.__str__()
-        return "".join(s.split())
+        return "".join(s.split()) + str(self.playerTurn)
 
     def _check_for_end(self):
         if self.boards.is_game_over():
