@@ -22,8 +22,9 @@ class Simple_Agent():
     # number of MCTS simulations
     # cpuct - exploration coefficient for uct
     # model - the neural net. Not used in simple agent, but kept here for the purpose of later extension
+    # interface - function to be called for xboard output commands
     ##########
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
+    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model, interface):
         self.name = name
 
         self.state_size = state_size
@@ -36,6 +37,8 @@ class Simple_Agent():
 
         # mcts saves tree info and statistics.
         self.mcts = None
+
+        self.interface = interface
 
     ##########
     # do one simulation of a game and evaluate the outcome. Update the MC search tree in the progress.

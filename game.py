@@ -9,6 +9,7 @@ import chess
 import numpy as np
 import logging
 from chess.variant import BughouseBoards, SingleBughouseBoard
+from input_representation import board_to_planes
 
 
 # board_number  0 for left 1 for right board
@@ -94,16 +95,14 @@ class GameState:
         """
         :return: The game state as a binary numpy array including both boards and pockets
         """
-        b1 = board_to_array(self.board).flatten()
-        b2 = board_to_array(self.partner_board).flatten()
-        pockets1 = [pocket_to_array(p) for p in self.board.pockets]
-        pockets2 = [pocket_to_array(p) for p in self.partner_board.pockets]
+        b1 = board_to_planes(self.board).flatten()
+        b2 = board_to_planes(self.partner_board).flatten()
 
-        return np.concatenate([b1,pockets1[0],pockets1[1],b2,pockets2[0],pockets2[1]])
+        return np.concatenate([b1,b2])
 
     def _convert_state_to_id(self):
         s = self.boards.__str__()
-        return "".join(s.split())
+        return "".join(s.split()) + str(self.playerTurn)
 
     def _check_for_end(self):
         if self.boards.is_game_over():
@@ -221,32 +220,3 @@ def array_as_move(action):
     else:
         return chess.Move(fromSquare, toSquare, None)
 
-
-def board_to_array(board):
-    """
-    Converts a single board without pockets to a binary numpy array
-    The size should be:
-    number of squares * number of possible figures * number of colors = 8*8*6*2
-    :param board: single chess board
-
-    TODO
-    Can/should this be smaller?
-    """
-    array = np.zeros((64, 6, 2))
-    for field,piece in board.piece_map().items():
-        p_type = piece.piece_type - 1
-        color = 1 if piece.color else 0
-        array[field][p_type][color] = 1
-
-    return array
-
-
-def pocket_to_array(pocket):
-    """
-    Converts a pocket of a SingleBughouseBoard to a numpy array (6,).
-    """
-    d = dict(pocket.pieces)
-    array = np.zeros(6)
-    for piece, count in d.items():
-        array[piece - 1] = count
-    return array

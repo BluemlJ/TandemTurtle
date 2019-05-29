@@ -1,6 +1,7 @@
 # How to extract data
 ## Where to find data
-I used the FICS Database to get games. You can download the data from [here](https://www.bughouse-db.org/).
+I used the FICS Database to get games. You can download the data from [here](https://www.bughouse-db.org/)
+or by running download_data.py.
 Please save the data in the data folder.
 
 ## Which format should the data have
