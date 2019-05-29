@@ -28,6 +28,6 @@ class XBoardInterface():
 
     
     def sendAction(self, message):
-        message = str(message)
+        message = str(message)[-4:]
         print("[interface][" + self.name + "][action]:", message)
         self.ws.send(message)
