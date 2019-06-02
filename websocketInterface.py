@@ -8,6 +8,9 @@ class XBoardInterface():
         self.ws = create_connection("ws://localhost:80/websocketclient")
         self.name = name
         self.gameStarted = False
+        self.isMyTurn = False
+        self.lastMove = None
+        self.color = None
 
         # wait for messages
         _thread.start_new_thread( self._readWebsocket, ())
@@ -25,9 +28,20 @@ class XBoardInterface():
         
         if message == "go":
             self.gameStarted = True
-
+            self.isMyTurn = True
+            if self.color == None:
+                self.color = 'white'
+        if message == "playother":
+            self.gameStarted = True
+            self.isMyTurn = False
+            if self.color == None:
+                self.color = 'black'
+        if "move" in message and "pmove" not in message:
+            self.lastMove = str(message)[-4:]
+            self.isMyTurn = not self.isMyTurn
     
     def sendAction(self, message):
-        message = str(message)[-4:]
+        # TODO remove 'move' correctly
+        message = "move " + str(message)[-4:]
         print("[interface][" + self.name + "][action]:", message)
         self.ws.send(message)
