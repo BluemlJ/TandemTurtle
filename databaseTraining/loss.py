@@ -3,7 +3,7 @@ import tensorflow as tf
 
 
 def softmax_cross_entropy_with_logits(y_true, y_pred):
-
+	print ("Loss used :-)")
 	p = y_pred
 	pi = y_true
 
