@@ -1,11 +1,11 @@
 
-import training_from_database.config_training as cf
-import training_from_database.loss as loss
+from databaseTraining import config_training as cf
+import databaseTraining.loss as loss
 
 import numpy as np
 
 from keras.models import Model
-from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Activation, LeakyReLU, add
+from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
 # from keras.optimizers import adam  # , SGD
 from keras import regularizers
 
@@ -13,10 +13,6 @@ from keras import regularizers
 class NeuralNetwork:
 
     def __init__(self):
-
-        # self.input_dim = cf.INPUT_DIM
-        # self.output_dim = cf.OUTPUT_DIM_VALUE_HEAD
-
         self.X_train = None
         self.X_test = None
         self.Y_train = None
@@ -29,16 +25,19 @@ class NeuralNetwork:
     ########
     def train_from_database(self):
 
+        # fix random seed for reproducibility
+        np.random.seed(0)
+
         # load data to X and Y
         self.load_data()
 
-        # set up layer structure
+        # set up and print layer structure
         self.create_network()
         print(self.model.summary())
 
-        # Compile model #todo look at model.py
+        # Compile model
         self.model.compile(loss=loss.softmax_cross_entropy_with_logits, optimizer='adam')
-        # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (see model.py)
+        # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
         # Maybe try:  metrics=['accuracy']
 
         # Fit the model
@@ -50,9 +49,6 @@ class NeuralNetwork:
 
     def load_data(self):
 
-        # fix random seed for reproducibility
-        np.random.seed(0)
-
         # load  dataset #TODO: load data in form "gameStateRepresentation" -> later winner
         dataset = np.loadtxt("test.csv", delimiter=";")
 
@@ -63,15 +59,22 @@ class NeuralNetwork:
         self.Y_test = dataset[:100, 2]
 
     def create_network(self):
+
+        # create input
         main_input = Input(shape=self.X_train.size())  # TODO: does size return a tuple?
+
+        # apply convolutional layer
         x = self.convolutional_layer(main_input)
+
+        # apply residual layers
         for i in range(cf.NR_RESIDUAL_LAYERS):
             x = self.residual_layer(x)
-        x = self.value_head(x)
-        x = self.value_head(x)
-        model = Model(inputs=[main_input], outputs=[x])
 
-        # TODO: other Layers.
+        # apply value head
+        x = self.value_head(x)
+
+        # create model
+        self.model = Model(inputs=[main_input], outputs=[x])
 
     @staticmethod
     def convolutional_layer(x):
@@ -84,17 +87,66 @@ class NeuralNetwork:
             activation='linear',
             kernel_regularizer=regularizers.l2(cf.REG_CONST)
         )(x)
+
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
         return x
 
-    def residual_layer(self, x):
-        x = self.convolutional_layer(x)
-        # TODO other stuff, relu...
+    def residual_layer(self, x_in):
+        x = self.convolutional_layer(x_in)
+        x = Conv2D(
+            filters=cf.NR_CONV_FILTERS,
+            kernel_size=cf.KERNEL_SIZE_CONVOLUTION,
+            data_format="channels_first",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(cf.REG_CONST)
+        )(x)
+        x = BatchNormalization(axis=1)(x)
+
+        # Skip connection
+        x = add([x_in, x])
+        x = LeakyReLU()(x)
         return x
 
-    def value_head(self, x):
-        x = self.convolutional_layer(x)
+    @staticmethod
+    def value_head(x):
+        x = Conv2D(
+          filters=1,
+          kernel_size=(1, 1),
+          data_format="channels_first",
+          padding='same',
+          use_bias=False,
+          activation='linear',
+          kernel_regularizer=regularizers.l2(cf.REG_CONST)
+        )(x)
 
-        #  TODO relu etc, cf.SIZE_VALUE_HEAD_HIDDEN
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
+
+        # flatten x in order to put it into the dense NN
+        x = Flatten()(x)
+
+        # first fully connected layer
+        x = Dense(
+              cf.SIZE_VALUE_HEAD_HIDDEN,
+              use_bias=False,
+              activation='linear',
+              kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            )(x)
+
+        x = LeakyReLU()(x)
+
+        # second fully connected layer
+        x = Dense(
+              1,
+              use_bias=False,
+              activation='tanh',
+              kernel_regularizer=regularizers.l2(cf.REG_CONST),
+              name='value_head',
+            )(x)
+
         return x
 
     def evaluate_model(self):
@@ -102,3 +154,7 @@ class NeuralNetwork:
         scores_train = self.model.evaluate(self.X_train, self.Y_train)
         print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
         print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
+
+
+nn = NeuralNetwork()
+nn.train_from_database()
