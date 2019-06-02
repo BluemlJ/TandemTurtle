@@ -1,78 +1,104 @@
-import logging
-import training_from_database.config_training as configt
-#import loss
+
+import training_from_database.config_training as cf
+import training_from_database.loss as loss
 
 import numpy as np
 
-import matplotlib.pyplot as plt
-
-from keras.models import Sequential, load_model, Model
+from keras.models import Model
 from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Activation, LeakyReLU, add
-from keras.optimizers import SGD
+# from keras.optimizers import adam  # , SGD
 from keras import regularizers
 
-#from loss import softmax_cross_entropy_with_logits
 
-import logger as lg
-
-import keras.backend as K
-
-class neural_network():
+class NeuralNetwork:
 
     def __init__(self):
-        self.reg_const = configt.REG_CONST
-        self.learning_rate = configt.LEARNING_RATE
-        self.input_dim = configt.INPUT_DIM
-        self.output_dim = configt.OUTPUT_DIM_VALUE_HEAD
-        self.X = None
-        self.Y = None
+
+        # self.input_dim = cf.INPUT_DIM
+        # self.output_dim = cf.OUTPUT_DIM_VALUE_HEAD
+
+        self.X_train = None
+        self.X_test = None
+        self.Y_train = None
+        self.Y_test = None
         self.model = None
 
-    def load_data(self):
-        # fix random seed for reproducibility
-        np.random.seed(0)
-
-        # load  dataset #TODO: load data in form "gamestateRepresentation" -> later winner
-        dataset = np.loadtxt("test.csv", delimiter=";")
-
-        # split into input (X) and output (Y) variables
-        self.X = dataset[:, 0:2]  # TODO adjust to dataset dimension
-        self.Y = dataset[:, 2]
-
+    ########
+    # train_from_database:
+    # main training function - loads data, creates and trains a network
+    ########
     def train_from_database(self):
+
         # load data to X and Y
         self.load_data()
 
         # set up layer structure
-        self.create_model()
+        self.create_network()
+        print(self.model.summary())
 
         # Compile model #todo look at model.py
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        self.model.compile(loss=loss.softmax_cross_entropy_with_logits, optimizer='adam')
+        # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (see model.py)
+        # Maybe try:  metrics=['accuracy']
 
         # Fit the model
-        self.model.fit(self.X, self.Y, epochs=configt.EPOCHS, batch_size=configt.BATCH_SIZE)  # automatically on gpu? cluster
+        self.model.fit(self.X_train, self.Y_train, epochs=cf.EPOCHS, batch_size=cf.BATCH_SIZE)
+        # automatically on gpu? cluster
 
-        # evaluate the model
+        # evaluate the model and print the results.
         self.evaluate_model()
 
-    def create_model(self):
-        model = Sequential()
-        self.add_convolutional_layer(256, 3)
+    def load_data(self):
+
+        # fix random seed for reproducibility
+        np.random.seed(0)
+
+        # load  dataset #TODO: load data in form "gameStateRepresentation" -> later winner
+        dataset = np.loadtxt("test.csv", delimiter=";")
+
+        # split into input (X) and output (Y) variables
+        self.X_train = dataset[100:, 0:2]  # TODO adjust to dataset dimension.
+        self.Y_train = dataset[100:, 2]
+        self.X_test = dataset[:100, 0:2]
+        self.Y_test = dataset[:100, 2]
+
+    def create_network(self):
+        main_input = Input(shape=self.X_train.size())  # TODO: does size return a tuple?
+        x = self.convolutional_layer(main_input)
+        for i in range(cf.NR_RESIDUAL_LAYERS):
+            x = self.residual_layer(x)
+        x = self.value_head(x)
+        x = self.value_head(x)
+        model = Model(inputs=[main_input], outputs=[x])
+
         # TODO: other Layers.
 
-    def add_convolutional_layer(self, filters, kernel_size):
-        self.model.add(Conv2D(
-            filters = filters
-            , kernel_size = kernel_size
-            , data_format="channels_first"
-            , padding = 'same'
-            , use_bias=False
-            , activation='linear'
-            , kernel_regularizer = regularizers.l2(configt.REG_CONST)
-            ))
+    @staticmethod
+    def convolutional_layer(x):
+        x = Conv2D(
+            filters=cf.NR_CONV_FILTERS,
+            kernel_size=cf.KERNEL_SIZE_CONVOLUTION,
+            data_format="channels_first",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(cf.REG_CONST)
+        )(x)
+        return x
+
+    def residual_layer(self, x):
+        x = self.convolutional_layer(x)
+        # TODO other stuff, relu...
+        return x
+
+    def value_head(self, x):
+        x = self.convolutional_layer(x)
+
+        #  TODO relu etc, cf.SIZE_VALUE_HEAD_HIDDEN
+        return x
 
     def evaluate_model(self):
-        scores = self.model.evaluate(self.X, self.Y) #TODO here only test data.
-        print("\n%s: %.2f%%" % (self.model.metrics_names[1], scores[1] * 100))
-
-
+        scores_test = self.model.evaluate(self.X_test, self.Y_test)
+        scores_train = self.model.evaluate(self.X_train, self.Y_train)
+        print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
+        print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
