@@ -61,7 +61,7 @@ class NeuralNetwork:
     def create_network(self):
 
         # create input
-        main_input = Input(shape=self.X_train.size())  # TODO: does size return a tuple?
+        main_input = Input(shape=self.X_train[0].shape)  
 
         # apply convolutional layer
         x = self.convolutional_layer(main_input)
