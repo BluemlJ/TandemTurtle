@@ -1,30 +1,37 @@
-
-from databaseTraining import config_training as cf
-import databaseTraining.loss as loss
-
+"""
+TODO optimize hyperparameters
+TODO NextMove/policy
+TODO shuffle data after every epoch
+"""
 import numpy as np
-
-from keras.models import Model
-from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
 # from keras.optimizers import adam  # , SGD
 from keras import regularizers
+from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
+from keras.models import Model
+from math import ceil
+
+import loss
+import  config_training as cf
+from data_generator import generate_value_batch, num_samples
 
 
 class NeuralNetwork:
 
     def __init__(self):
-        self.X_train = None
-        self.X_test = None
-        self.Y_train = None
-        self.Y_test = None
         self.model = None
+        self.train_data_generator = None
+        self.validation_data_generator = None
+        self.test_data_generator = None
+        self.in_dim = (34, 8, 8)
+        self.n_train = None
+        self.n_val = None
+        self.n_test = None
 
     ########
     # train_from_database:
     # main training function - loads data, creates and trains a network
     ########
     def train_from_database(self):
-
         # fix random seed for reproducibility
         np.random.seed(0)
 
@@ -41,27 +48,28 @@ class NeuralNetwork:
         # Maybe try:  metrics=['accuracy']
 
         # Fit the model
-        self.model.fit(self.X_train, self.Y_train, epochs=cf.EPOCHS, batch_size=cf.BATCH_SIZE)
-        # automatically on gpu? cluster
+        self.model.fit_generator(self.test_data_generator, steps_per_epoch=ceil(self.n_train / cf.BATCH_SIZE),
+                                 epochs=cf.EPOCHS,
+                                 verbose=1, validation_data=self.validation_data_generator,
+                                 validation_steps=self.n_val)
+
+        # TODO  automatically on gpu? cluster
 
         # evaluate the model and print the results.
         self.evaluate_model()
 
     def load_data(self):
+        self.train_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.train", "data/result.train", False)
+        self.validation_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.validation", "data/result.validation", False)
+        self.test_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.test", "data/result.test", False)
 
-        # load  dataset #TODO: load data in form "gameStateRepresentation" -> later winner
-        dataset = np.loadtxt("test.csv", delimiter=";")
-
-        # split into input (X) and output (Y) variables
-        self.X_train = dataset[100:, 0:2]  # TODO adjust to dataset dimension.
-        self.Y_train = dataset[100:, 2]
-        self.X_test = dataset[:100, 0:2]
-        self.Y_test = dataset[:100, 2]
+        self.n_train = num_samples("data/result.train")
+        self.n_val = num_samples("data/result.validation")
+        self.n_test = num_samples("data/result.test")
 
     def create_network(self):
-
         # create input
-        main_input = Input(shape=self.X_train[0].shape)  
+        main_input = Input(shape=self.in_dim)
 
         # apply convolutional layer
         x = self.convolutional_layer(main_input)
@@ -113,13 +121,13 @@ class NeuralNetwork:
     @staticmethod
     def value_head(x):
         x = Conv2D(
-          filters=1,
-          kernel_size=(1, 1),
-          data_format="channels_first",
-          padding='same',
-          use_bias=False,
-          activation='linear',
-          kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            filters=1,
+            kernel_size=(1, 1),
+            data_format="channels_first",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(cf.REG_CONST)
         )(x)
 
         x = BatchNormalization(axis=1)(x)
@@ -130,28 +138,28 @@ class NeuralNetwork:
 
         # first fully connected layer
         x = Dense(
-              cf.SIZE_VALUE_HEAD_HIDDEN,
-              use_bias=False,
-              activation='linear',
-              kernel_regularizer=regularizers.l2(cf.REG_CONST)
-            )(x)
+            cf.SIZE_VALUE_HEAD_HIDDEN,
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(cf.REG_CONST)
+        )(x)
 
         x = LeakyReLU()(x)
 
         # second fully connected layer
         x = Dense(
-              1,
-              use_bias=False,
-              activation='tanh',
-              kernel_regularizer=regularizers.l2(cf.REG_CONST),
-              name='value_head',
-            )(x)
+            1,
+            use_bias=False,
+            activation='tanh',
+            kernel_regularizer=regularizers.l2(cf.REG_CONST),
+            name='value_head',
+        )(x)
 
         return x
 
     def evaluate_model(self):
-        scores_test = self.model.evaluate(self.X_test, self.Y_test)
-        scores_train = self.model.evaluate(self.X_train, self.Y_train)
+        scores_test = self.model.evaluate_generator(self.test_data_generator, steps=self.n_test)
+        scores_train = self.model.evaluate_generator(self.train_data_generator, steps=self.n_train)
         print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
         print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
 
