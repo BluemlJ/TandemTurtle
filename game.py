@@ -28,7 +28,9 @@ class Game:
         self.name = 'bughouse'
 
         self.action_size = 64*64*6*2
-        self.state_size = len(self.gameState.binary)
+        # Todo not hard coded
+        # self.state_size = len(self.gameState.binary)
+        self.state_size = 4352
 
         """
         TODO Do we need this stuff?
@@ -77,7 +79,7 @@ class GameState:
 
         self.playerTurn = player_turn
 
-        self.binary = self._binary()
+        # self.binary = self._binary()
         self.id = self._convert_state_to_id()
         self.allowedActions = self._allowed_actions()
         self.isEndGame = self._check_for_end()
