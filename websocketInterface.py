@@ -41,7 +41,6 @@ class XBoardInterface():
             self.lastMove = str(message)[-4:]
             self.isMyTurn = not self.isMyTurn
         if "pmove" in message:
-
             self.otherMoves += [str(message)[-4:]]
 
     
