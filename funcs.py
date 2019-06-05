@@ -42,9 +42,6 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
     while interface.color == None:
         sleep(0.01)
     env = Game(0)
-    env2 = Game(1)
-    state = env.reset()
-    state2 = env2.reset()
     turn = 0
     done = False
 
@@ -63,7 +60,7 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
             for move in interface.otherMoves:
                 mv = chess.Move.from_uci(move)
                 mv.board_id = 1
-                state2, value2, done2, _ = env2.step(mv)
+                state.push_action(mv)
             interface.otherMoves = []
 
         
