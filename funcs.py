@@ -42,7 +42,9 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
     while interface.color == None:
         sleep(0.01)
     env = Game(0)
+    env2 = Game(1)
     state = env.reset()
+    state2 = env2.reset()
     turn = 0
     done = False
 
@@ -58,6 +60,12 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
             mv.board_id = 0
             state, value, done, _ = env.step(mv)
             interface.lastMove = ''
+            for move in interface.otherMoves:
+                mv = chess.Move.from_uci(move)
+                mv.board_id = 1
+                state2, value2, done2, _ = env2.step(mv)
+            interface.otherMoves = []
+
         
         print(f"[{player.name}] It's my turn!")
         
@@ -69,6 +77,7 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
 
         # send message
         logger.info(f"move {action} was played by {player.name}")
+        print(action)
         interface.sendAction(action)
         interface.isMyTurn = False
 

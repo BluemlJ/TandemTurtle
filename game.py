@@ -151,7 +151,7 @@ class GameState:
         """
 
         # Checks if move is correct
-        self.check_if_legal(action)
+        # self.check_if_legal(action)
 
         new_boards = BughouseBoards(self.boards.fen)
         new_boards.push(action)

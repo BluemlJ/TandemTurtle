@@ -10,6 +10,7 @@ class XBoardInterface():
         self.gameStarted = False
         self.isMyTurn = False
         self.lastMove = None
+        self.otherMoves = []
         self.color = None
 
         # wait for messages
@@ -39,6 +40,10 @@ class XBoardInterface():
         if "move" in message and "pmove" not in message:
             self.lastMove = str(message)[-4:]
             self.isMyTurn = not self.isMyTurn
+        if "pmove" in message:
+
+            self.otherMoves += [str(message)[-4:]]
+
     
     def sendAction(self, message):
         # TODO remove 'move' correctly
