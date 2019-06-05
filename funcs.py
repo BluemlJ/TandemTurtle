@@ -56,12 +56,12 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
             print(f"[{player.name}] performing action of opponent {interface.lastMove}")
             mv = chess.Move.from_uci(interface.lastMove)
             mv.board_id = 0
-            state.push_action(mv)
+            state, value, done, _ = env.step(mv)
             interface.lastMove = ''
             for move in interface.otherMoves:
                 mv = chess.Move.from_uci(move)
-                mv.board_id = 21
-                state.push_actions(mv)
+                mv.board_id = 1
+                state.push_action(mv)
             interface.otherMoves = []
 
         
