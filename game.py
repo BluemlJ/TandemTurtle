@@ -57,10 +57,6 @@ class GameState:
     The board number decides on which board the engine is playing
     Moves/actions are passed as numpy arrays.
 
-    TODO:
-    -id does not include whether kings/rooks moved
-    -functions to update partner board
-    -Do we really need the representation as numpy arrays for the actions?
     """
 
     def __init__(self, boards, board_number, player_turn):
