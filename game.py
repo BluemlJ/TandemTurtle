@@ -153,13 +153,8 @@ class GameState:
         # Checks if move is correct
         self.check_if_legal(action)
 
-        new_boards = BughouseBoards()
-        left = new_boards[0]
-        right = new_boards[1]
-        for move in self.boards.boards[0].move_stack:
-            left.push(move)
-        for move in self.boards.boards[1].move_stack:
-            right.push(move)
+        new_boards = BughouseBoards(self.boards.fen)
+
 
         new_board = new_boards.boards[self.board_number]
         new_board.push(action)
