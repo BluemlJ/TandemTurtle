@@ -168,6 +168,17 @@ class GameState:
 
         return (newState, value, done)
 
+    def push_action(self,action,board_id = None):
+        """
+        Update the gamestate by pushing a move
+        :param action: python chess move
+        :param board_id: If not None it will try to push the move on the specified board. If None the board_id in move is used
+        """
+        if board_id:
+            self.boards.boards[board_id].push(action)
+        else:
+            self.boards.push(action)
+
     def render(self, logger):
         logger.info(self.boards.__str__())
         logger.info('--------------')
