@@ -38,9 +38,9 @@ if SERVER_IS_RUNNING:
 
 
     _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 1", True))
-    _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 2", False))
-    _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 3", True))
-    _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 4", False))
+ #   _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 2", False))
+ #   _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 3", True))
+ #   _thread.start_new_thread ( create_and_run_websocket_agent, ("Agent 4", False))
 
     while True:
         sleep(10)
