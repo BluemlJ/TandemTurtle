@@ -154,10 +154,8 @@ class GameState:
         self.check_if_legal(action)
 
         new_boards = BughouseBoards(self.boards.fen)
+        new_boards.push(action)
 
-
-        new_board = new_boards.boards[self.board_number]
-        new_board.push(action)
 
         newState = GameState(new_boards, self.board_number, -self.playerTurn)
 
