@@ -1,11 +1,14 @@
 from websocket import create_connection
+import sys
 import _thread
 import time
 
 
 class XBoardInterface():
-    def __init__(self, name):
-        self.ws = create_connection("ws://localhost:80/websocketclient")
+    def __init__(self, name, interfaceType="websocket"):
+        self.interfaceType = interfaceType
+        if interfaceType == "websocket":
+            self.ws = create_connection("ws://localhost:80/websocketclient")
         self.name = name
         self.gameStarted = False
         self.isMyTurn = False
@@ -17,15 +20,17 @@ class XBoardInterface():
         _thread.start_new_thread(self._readWebsocket, ())
 
     def _readWebsocket(self):
-        count = 0
         while True:
-            result = str(self.ws.recv())
+            if self.interfaceType == "websocket":
+                result = str(self.ws.recv())
+            else:
+                result = str(sys.stdin.readline()).strip()
             self._handleServerMessage(result)
 
     def _handleServerMessage(self, message):
-        print("[interface][" + self.name + "][received]", message)
+        self.logViaInterfaceType("[received]" + str(message))
         if message == "protover 4":
-            self.ws.send("feature san=1, time=1, variants=\"bughouse\", otherboard=1, colors=1, time=1, done=1")
+            self.sendViaInterfaceType("feature san=1, time=1, variants=\"bughouse\", otherboard=1, colors=1, time=1, done=1")
 
         if message == "go":
             self.gameStarted = True
@@ -44,10 +49,20 @@ class XBoardInterface():
             self.otherMoves += [self.stripMessage(message)]
 
     def sendAction(self, message):
-        # TODO remove 'move' correctly
         message = "move " + self.stripMessage(message)
-        print("[interface][" + self.name + "][action]:", message)
-        self.ws.send(message)
+        self.logViaInterfaceType("[action]:" + str(message))
+        self.sendViaInterfaceType(message)
 
     def stripMessage(self, message):
         return str(message).split(' ')[-1]
+    
+
+    def logViaInterfaceType(self, message):
+        if self.interfaceType == "websocket":
+            print("[interface][" + self.name + "]" + message)
+
+    def sendViaInterfaceType(self, message):
+        if self.interfaceType == "websocket":
+            self.ws.send(message)
+        else:
+            print(message)
