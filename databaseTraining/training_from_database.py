@@ -24,7 +24,7 @@ class NeuralNetwork:
         self.test_data_generator = None
         self.in_dim = (34, 8, 8)
         self.out_dim_value_head = 1
-        self.out_dim_policy_head = (68, 79)  # TODO: find out output dimension
+        self.out_dim_policy_head = 68 * 79  # TODO: find out output dimension
         self.n_train = None
         self.n_val = None
         self.n_test = None
@@ -38,18 +38,22 @@ class NeuralNetwork:
         np.random.seed(0)
 
         # load data to X and Y
+        print("Loading data")
         self.load_data()
 
         # set up and print layer structure
+        print("Creating model")
         self.create_network()
         print(self.model.summary())
 
         # Compile model
+        print("Compiling model")
         self.model.compile(loss=loss.softmax_cross_entropy_with_logits, optimizer='adam')
         # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
         # Maybe try:  metrics=['accuracy']
 
         # Fit the model
+        print("Fitting model")
         self.model.fit_generator(self.test_data_generator, steps_per_epoch=ceil(self.n_train / cf.BATCH_SIZE),
                                  epochs=cf.EPOCHS,
                                  verbose=1, validation_data=self.validation_data_generator,
@@ -58,6 +62,7 @@ class NeuralNetwork:
         # TODO  is this automatically on gpu? cluster
 
         # evaluate the model and print the results.
+        print("Evaluating model")
         self.evaluate_model()
 
     def load_data(self):
@@ -121,7 +126,6 @@ class NeuralNetwork:
         x = LeakyReLU()(x)
         return x
 
-    @staticmethod
     def value_head(self, x):
         x = Conv2D(
             filters=1,
