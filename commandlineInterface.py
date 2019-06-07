@@ -10,3 +10,7 @@ class XBoardInterface():
     def sendAction(self, message):
         message = str(message)
         print("[interface][" + self.name + "][action]:", message)
+        print("move", self.stripMessage(message))
+
+    def stripMessage(self, message):
+        return message.split(' ')[-1]
