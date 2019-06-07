@@ -38,13 +38,16 @@ class XBoardInterface():
             if self.color is None:
                 self.color = 'black'
         if "move" in message and "pmove" not in message:
-            self.lastMove = str(message)[-4:]
+            self.lastMove = self.stripMessage(message)
             self.isMyTurn = not self.isMyTurn
         if "pmove" in message:
-            self.otherMoves += [str(message)[-4:]]
+            self.otherMoves += [self.stripMessage(message)]
 
     def sendAction(self, message):
         # TODO remove 'move' correctly
-        message = "move " + str(message)[-4:]
+        message = "move " + self.stripMessage(message)
         print("[interface][" + self.name + "][action]:", message)
         self.ws.send(message)
+
+    def stripMessage(self, message):
+        return str(message).split(' ')[-1]
