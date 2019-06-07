@@ -9,6 +9,12 @@ To install, run `python3 setup.py build` and `python3 setup.py install`
   * Use the tinyChessServer: [https://github.com/MoritzWillig/tinyChessServer/]
   * In the server folder run `npm install`
   * In the vue-frontend folder run `npm install`
+
+# How to contribute (more installs!)
+  * make sure `autopep8` is installed for python3
+  * copy the file `pre-commit` to `.git/hooks/pre-commit`
+  * make the file executable 
+
 # How to run
 
 To run on the server (and see the match visualized 'in action'), please:
