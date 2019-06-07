@@ -7,6 +7,28 @@ import logger as lg
 import funcs
 from game import Game, GameState
 import numpy as np
+
+
+intro_message =\
+"""
+
+                        __   __
+           .,-;-;-,.   /'_\ /_'\ .,-;-;-,.
+          _/_/_/_|_\_\) /    \ (/_/_|_\_\_\_
+       '-<_><_><_><_>=/\     /\=<_><_><_><_>-'
+         `/_/====/_/-'\_\   /_/'-\_\====\_\'
+
+  _____             _             _____         _   _     
+ |_   _|_ _ _ _  __| |___ _ __   |_   _|  _ _ _| |_| |___ 
+   | |/ _` | ' \/ _` / -_) '  \    | || || | '_|  _| / -_)
+   |_|\__,_|_||_\__,_\___|_|_|_|   |_| \_,_|_|  \__|_\___|
+
+Jannis Blüml, Maximilian Otte, Florian Netzer, Magdalena Wache, Lars Wolf
+License GPL v3.0                                                      
+ASCII-Art: Joan Stark              
+
+"""
+print(intro_message)
 np.set_printoptions(suppress=True)
 
 
