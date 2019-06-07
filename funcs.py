@@ -54,7 +54,7 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
 
         # perform move of other player
         if (turn > 0 and interface.color == 'white') or interface.color == 'black':
-            print(f"[{player.name}] performing action of opponent {interface.lastMove}")
+            interface.logViaInterfaceType(f"[{player.name}] performing action of opponent {interface.lastMove}")
             mv = chess.Move.from_uci(interface.lastMove)
             mv.board_id = 0
             state, value, done, _ = env.step(mv)
@@ -65,7 +65,7 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
                 state.push_action(mv)
             interface.otherMoves = []
 
-        print(f"[{player.name}] It's my turn!")
+        interface.logViaInterfaceType(f"[{player.name}] It's my turn!")
 
         turn += 1
         tauNotReached = 1 if turn < turns_until_tau0 else 0
@@ -75,7 +75,6 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
 
         # send message
         logger.info(f"move {action} was played by {player.name}")
-        print(action)
         interface.sendAction(action)
         interface.isMyTurn = False
 
@@ -88,99 +87,3 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
         env.gameState.render(logger)
 
     print(f"[{player.name}] Game finished!")
-
-
-def play_matches(players, number_games, logger, turns_until_tau0, player1_goes_first=None):
-    # TODO include player3, 4 and do something with env2
-    player1 = players[0]
-    player2 = players[2]
-    player3 = players[1]
-    player4 = players[3]
-
-    env1 = Game(0)
-    env2 = Game(1)
-    scores = {player1.name: 0, "drawn": 0, player2.name: 0}
-    sp_scores = {'sp': 0, "drawn": 0, 'nsp': 0}
-    points = {player1.name: [], player2.name: []}
-
-    for e in range(number_games):
-
-        # logger.info('====================')
-        # logger.info('EPISODE %d OF %d', e + 1, number_games)
-        # logger.info('====================')
-
-        print(str(e + 1) + ' ', end='')
-
-        state = env1.reset()
-
-        done = 0
-        turn = 0
-        player1.mcts = None
-        player2.mcts = None
-
-        if player1_goes_first is None:
-            player1Starts = bool(random.getrandbits(1))
-        else:
-            player1Starts = player1_goes_first
-
-        # Get color of players and determine the starter
-
-        if player1Starts:
-            players = {1: {"agent": player1, "name": player1.name}, -1: {"agent": player2, "name": player2.name}}
-            logger.info(player1.name + ' plays as X')
-        else:
-            players = {1: {"agent": player2, "name": player2.name}, -1: {"agent": player1, "name": player1.name}}
-            logger.info(player2.name + ' plays as X')
-            logger.info('--------------')
-
-        env1.gameState.render(logger)
-
-        while done == 0:
-            turn = turn + 1
-
-            # Run the MCTS algo and return an action
-            if turn < turns_until_tau0:
-                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
-            else:
-                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
-
-            # send message
-            logger.info(f"move {action} was played by {players[state.playerTurn]['name']}")
-            players[state.playerTurn]['agent'].interface.sendAction(action)
-
-            # Do the action
-            state, value, done, _ = env1.step(action)
-
-            # the value of the newState from the POV of the new playerTurn
-            # i.e. -1 if the previous player played a winning move
-
-            env1.gameState.render(logger)
-
-            # Updates scores and loggs if someone won
-            if done == 1:
-                if value == 1:
-                    logger.info('%s WINS!', players[state.playerTurn]['name'])
-                    scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1
-                    if state.playerTurn == 1:
-                        sp_scores['sp'] = sp_scores['sp'] + 1
-                    else:
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
-
-                elif value == -1:
-                    logger.info('%s WINS!', players[-state.playerTurn]['name'])
-                    scores[players[-state.playerTurn]['name']] = scores[players[-state.playerTurn]['name']] + 1
-
-                    if state.playerTurn == 1:
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
-                    else:
-                        sp_scores['sp'] = sp_scores['sp'] + 1
-
-                else:
-                    logger.info('DRAW...')
-                    scores['drawn'] = scores['drawn'] + 1
-                    sp_scores['drawn'] = sp_scores['drawn'] + 1
-
-                pts = state.score
-                points[players[state.playerTurn]['name']].append(pts[0])
-                points[players[-state.playerTurn]['name']].append(pts[1])
-    return scores, points, sp_scores
