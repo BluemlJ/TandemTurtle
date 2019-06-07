@@ -10,9 +10,9 @@ from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Leak
 from keras.models import Model
 from math import ceil
 
-import loss
-import config_training as cf
-from data_generator import generate_value_batch, num_samples
+import databaseTraining.loss as loss
+import databaseTraining.config_training as cf
+from databaseTraining.data_generator import generate_value_batch, num_samples
 
 
 class NeuralNetwork:
@@ -23,6 +23,8 @@ class NeuralNetwork:
         self.validation_data_generator = None
         self.test_data_generator = None
         self.in_dim = (34, 8, 8)
+        self.out_dim_value_head = 1
+        self.out_dim_policy_head = (68, 79)  # TODO: find out output dimension
         self.n_train = None
         self.n_val = None
         self.n_test = None
@@ -53,7 +55,7 @@ class NeuralNetwork:
                                  verbose=1, validation_data=self.validation_data_generator,
                                  validation_steps=self.n_val)
 
-        # TODO  automatically on gpu? cluster
+        # TODO  is this automatically on gpu? cluster
 
         # evaluate the model and print the results.
         self.evaluate_model()
@@ -78,11 +80,12 @@ class NeuralNetwork:
         for i in range(cf.NR_RESIDUAL_LAYERS):
             x = self.residual_layer(x)
 
-        # apply value head
+        # apply policy head and value head
+        y = self.policy_head(x)
         x = self.value_head(x)
 
         # create model
-        self.model = Model(inputs=[main_input], outputs=[x])
+        self.model = Model(inputs=[main_input], outputs=[x, y])
 
     @staticmethod
     def convolutional_layer(x):
@@ -119,7 +122,7 @@ class NeuralNetwork:
         return x
 
     @staticmethod
-    def value_head(x):
+    def value_head(self, x):
         x = Conv2D(
             filters=1,
             kernel_size=(1, 1),
@@ -148,7 +151,7 @@ class NeuralNetwork:
 
         # second fully connected layer
         x = Dense(
-            1,
+            self.out_dim_value_head,
             use_bias=False,
             activation='tanh',
             kernel_regularizer=regularizers.l2(cf.REG_CONST),
@@ -156,6 +159,22 @@ class NeuralNetwork:
         )(x)
 
         return x
+
+    def policy_head(self, x):
+        x = Conv2D(
+            filters=2, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
+        )(x)
+
+        x = BatchNormalization(axis=1)(x)
+        x = LeakyReLU()(x)
+
+        x = Flatten()(x)
+
+        x = Dense(
+            self.out_dim_policy_head, use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
+        )(x)
+
+        return (x)
 
     def evaluate_model(self):
         scores_test = self.model.evaluate_generator(self.test_data_generator, steps=self.n_test)
