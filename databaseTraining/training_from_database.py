@@ -11,7 +11,7 @@ from keras.models import Model
 from math import ceil
 
 import loss
-import  config_training as cf
+import config_training as cf
 from data_generator import generate_value_batch, num_samples
 
 
@@ -59,9 +59,9 @@ class NeuralNetwork:
         self.evaluate_model()
 
     def load_data(self):
-        self.train_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.train", "data/result.train", False)
-        self.validation_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.validation", "data/result.validation", False)
-        self.test_data_generator = generate_value_batch(cf.BATCH_SIZE,"data/position.test", "data/result.test", False)
+        self.train_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.train", "data/result.train", False)
+        self.validation_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.validation", "data/result.validation", False)
+        self.test_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.test", "data/result.test", False)
 
         self.n_train = num_samples("data/result.train")
         self.n_val = num_samples("data/result.validation")

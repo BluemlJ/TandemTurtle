@@ -8,13 +8,12 @@ next_move next move for each position as string with board number (e.g B1 e2e4)
 TODO How long does this take to finish??? make faster
 TODO filter games (cancelled, connection lost)
 """
+import codecs
+import os
+import chess.pgn
 import sys
 
 sys.path.append("..")
-
-import chess.pgn
-import os
-import codecs
 
 
 def parse_all_positions(in_dir="../database_extraction/data/", out_dir="data/"):
@@ -54,8 +53,6 @@ def parse_all_positions(in_dir="../database_extraction/data/", out_dir="data/"):
                     game = chess.pgn.read_game(f)
 
 
-
-
 def splits(dir="data/"):
     """
     Splits data into train/validation/tset file
@@ -65,25 +62,25 @@ def splits(dir="data/"):
     with open(dir + "all_boards.txt", "r") as all_boards, \
             open(dir + "results.txt", "r") as labels, \
             open(dir + "next_move.txt", 'r') as next_moves,\
-            open(dir + "position.train",'w') as p_train,\
-            open(dir + "position.validation",'w') as p_validation,\
-            open(dir + "position.test",'w') as p_test,\
-            open(dir + "result.train",'w') as v_train,\
-            open(dir + "result.validation",'w') as v_validation,\
-            open(dir + "result.test",'w') as v_test, \
-            open(dir + "nm.train",'w') as nm_train, \
-            open(dir + "nm.validation",'w') as nm_validation, \
-            open(dir + "nm.test",'w') as nm_test:\
+            open(dir + "position.train", 'w') as p_train,\
+            open(dir + "position.validation", 'w') as p_validation,\
+            open(dir + "position.test", 'w') as p_test,\
+            open(dir + "result.train", 'w') as v_train,\
+            open(dir + "result.validation", 'w') as v_validation,\
+            open(dir + "result.test", 'w') as v_test, \
+            open(dir + "nm.train", 'w') as nm_train, \
+            open(dir + "nm.validation", 'w') as nm_validation, \
+            open(dir + "nm.test", 'w') as nm_test:\
 
-        #shuffle_files(["all_boards.txt","results.txt","next_move.txt"]) TODO
+        # shuffle_files(["all_boards.txt","results.txt","next_move.txt"]) TODO
 
-        for i,(position,result,nm) in enumerate(zip(all_boards,labels,next_moves)):
-            #every tenth point as test
-            if i%10 == 0:
+        for i, (position, result, nm) in enumerate(zip(all_boards, labels, next_moves)):
+            # every tenth point as test
+            if i % 10 == 0:
                 p_test.write(position)
                 v_test.write(result)
                 nm_test.write(nm)
-            elif i%15 == 0:
+            elif i % 15 == 0:
                 p_validation.write(position)
                 v_validation.write(result)
                 nm_validation.write(nm)
@@ -92,9 +89,12 @@ def splits(dir="data/"):
                 v_train.write(result)
                 nm_train.write(nm)
 
-#TODO shuffle lines in files so that the lines still match the lines in the other files
+# TODO shuffle lines in files so that the lines still match the lines in the other files
+
+
 def shuffle_files(files):
     raise NotImplementedError
 
-#parse_all_positions()
+
+# parse_all_positions()
 splits()

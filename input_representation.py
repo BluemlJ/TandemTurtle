@@ -210,7 +210,7 @@ def board_to_planes(board, board_occ=0, normalize=True):
     return planes
 
 
-def planes_to_board(planes,bughouse_boards , normalized_input=False):
+def planes_to_board(planes, bughouse_boards, normalized_input=False):
     """
     Converts a board in plane representation to the python chess board representation
     see get_planes_of_board() for input encoding description

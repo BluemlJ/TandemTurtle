@@ -147,10 +147,10 @@ def normalize_input_planes(x):
         # the prison for black begins 5 channels later
         mat_pos[channel + POCKETS_SIZE_PIECE_TYPE, :, :] /= MAX_NB_PRISONERS
 
-    ### Total Move Count
+    # Total Move Count
     # 500 was set as the max number of total moves
     mat_const[CHANNEL_MAPPING_CONST["total_mv_cnt"], :, :] /= MAX_NB_MOVES
-    ### No progress count
+    # No progress count
     # after 40 moves of no progress the 40 moves rule for draw applies
     mat_const[CHANNEL_MAPPING_CONST["no_progress_cnt"], :, :] /= MAX_NB_NO_PROGRESS
 
@@ -178,11 +178,11 @@ def customize_input_planes(x):
         # the prison for black begins 5 channels later
         mat_pos[channel + POCKETS_SIZE_PIECE_TYPE, :, :] /= MAX_NB_PRISONERS
 
-    ### Total Move Count
+    # Total Move Count
     # 500 was set as the max number of total moves
     mat_const[CHANNEL_MAPPING_CONST["total_mv_cnt"], :, :] *= MAX_NB_MOVES
     # apply rounding before converting to integer
-    ### No progress count
+    # No progress count
     # after 40 moves of no progress the 40 moves rule for draw applies
     mat_const[CHANNEL_MAPPING_CONST["no_progress_cnt"], :, :] *= MAX_NB_NO_PROGRESS
     np.round(x, decimals=0, out=x)

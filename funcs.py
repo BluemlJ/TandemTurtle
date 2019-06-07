@@ -38,8 +38,9 @@ def playMatchesBetweenVersions(env, run_version, player1version, player2version,
     return (scores, memory, points, sp_scores)
 """
 
+
 def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first):
-    while interface.color == None:
+    while interface.color is None:
         sleep(0.01)
     env = Game(0)
     state = env.reset()
@@ -64,9 +65,8 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
                 state.push_action(mv)
             interface.otherMoves = []
 
-        
         print(f"[{player.name}] It's my turn!")
-        
+
         turn += 1
         tauNotReached = 1 if turn < turns_until_tau0 else 0
 
@@ -86,9 +86,8 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
         # i.e. -1 if the previous player played a winning move
 
         env.gameState.render(logger)
-    
-    print(f"[{player.name}] Game finished!")
 
+    print(f"[{player.name}] Game finished!")
 
 
 def play_matches(players, number_games, logger, turns_until_tau0, player1_goes_first=None):

@@ -27,7 +27,7 @@ class Game:
 
         self.name = 'bughouse'
 
-        self.action_size = 64*64*6*2
+        self.action_size = 64 * 64 * 6 * 2
         # Todo not hard coded
         # self.state_size = len(self.gameState.binary)
         self.state_size = 4352
@@ -96,7 +96,7 @@ class GameState:
         b1 = board_to_planes(self.board).flatten()
         b2 = board_to_planes(self.partner_board).flatten()
 
-        return np.concatenate([b1,b2])
+        return np.concatenate([b1, b2])
 
     def _convert_state_to_id(self):
         s = self.boards.__str__()
@@ -154,7 +154,6 @@ class GameState:
         new_boards = BughouseBoards(self.boards.fen)
         new_boards.push(action)
 
-
         newState = GameState(new_boards, self.board_number, -self.playerTurn)
 
         value = 0
@@ -166,7 +165,7 @@ class GameState:
 
         return (newState, value, done)
 
-    def push_action(self,action,board_id = None):
+    def push_action(self, action, board_id=None):
         """
         Update the gamestate by pushing a move
         :param action: python chess move
@@ -221,4 +220,3 @@ def array_as_move(action):
         return chess.Move.from_uci(piece.symbol() + "@" + chess.SQUARE_NAMES[toSquare])
     else:
         return chess.Move(fromSquare, toSquare, None)
-

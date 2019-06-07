@@ -86,7 +86,6 @@ class MCTS:
 
             maxQU = -99999
 
-
             Nb = 0
             for action, edge in currentNode.edges:
                 Nb = Nb + edge.stats['N']
@@ -100,9 +99,26 @@ class MCTS:
 
                 Q = edge.stats['Q']
 
-                lg.logger_mcts.info('action: %s ... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                    , action, edge.stats['N'], np.round(edge.stats['P'],6), ( edge.stats['P'] )
-                    , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
+                lg.logger_mcts.info(
+                    'action: %s ... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f',
+                    action,
+                    edge.stats['N'],
+                    np.round(
+                        edge.stats['P'],
+                        6),
+                    (edge.stats['P']),
+                    np.round(
+                        edge.stats['W'],
+                        6),
+                    np.round(
+                        Q,
+                        6),
+                    np.round(
+                        U,
+                        6),
+                    np.round(
+                        Q + U,
+                        6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
@@ -136,13 +152,7 @@ class MCTS:
             edge.stats['W'] = edge.stats['W'] + value * direction
             edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
-                                , value * direction
-                                , playerTurn
-                                , edge.stats['N']
-                                , edge.stats['W']
-                                , edge.stats['Q']
+            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['N'], edge.stats['W'], edge.stats['Q']
                                 )
 
             # edge.outNode.state.render(lg.logger_mcts)

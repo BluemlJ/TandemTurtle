@@ -47,7 +47,6 @@ class User():
         raise NotImplemented
 
 
-
 class Agent():
     def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
         """
@@ -73,7 +72,6 @@ class Agent():
         raise NotImplemented
 
     def simulate(self):
-
         """
         lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
         self.mcts.root.state.render(lg.logger_mcts)
@@ -91,9 +89,7 @@ class Agent():
         """
         raise NotImplemented
 
-
     def act(self, state, tau):
-
         """
         if self.mcts == None or state.id not in self.mcts.tree:
             self.buildMCTS(state)
@@ -125,7 +121,6 @@ class Agent():
         return (action, pi, value, NN_value)
         """
         raise NotImplemented
-
 
     def get_preds(self, state):
         """
@@ -183,7 +178,6 @@ class Agent():
         return ((value, breadcrumbs))
         """
         raise NotImplemented
-
 
     def getAV(self, tau):
         """

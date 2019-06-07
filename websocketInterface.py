@@ -14,8 +14,8 @@ class XBoardInterface():
         self.color = None
 
         # wait for messages
-        _thread.start_new_thread( self._readWebsocket, ())
-  
+        _thread.start_new_thread(self._readWebsocket, ())
+
     def _readWebsocket(self):
         count = 0
         while True:
@@ -26,16 +26,16 @@ class XBoardInterface():
         print("[interface][" + self.name + "][received]", message)
         if message == "protover 4":
             self.ws.send("feature san=1, time=1, variants=\"bughouse\", otherboard=1, colors=1, time=1, done=1")
-        
+
         if message == "go":
             self.gameStarted = True
             self.isMyTurn = True
-            if self.color == None:
+            if self.color is None:
                 self.color = 'white'
         if message == "playother":
             self.gameStarted = True
             self.isMyTurn = False
-            if self.color == None:
+            if self.color is None:
                 self.color = 'black'
         if "move" in message and "pmove" not in message:
             self.lastMove = str(message)[-4:]
@@ -43,7 +43,6 @@ class XBoardInterface():
         if "pmove" in message:
             self.otherMoves += [str(message)[-4:]]
 
-    
     def sendAction(self, message):
         # TODO remove 'move' correctly
         message = "move " + str(message)[-4:]
