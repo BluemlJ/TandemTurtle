@@ -1,3 +1,19 @@
+~~~~
+                        __   __
+           .,-;-;-,.   /'_\ /_'\ .,-;-;-,.
+          _/_/_/_|_\_\) /    \ (/_/_|_\_\_\_
+       '-<_><_><_><_>=/\     /\=<_><_><_><_>-'
+         `/_/====/_/-'\_\   /_/'-\_\====\_\'
+
+  _____             _             _____         _   _     
+ |_   _|_ _ _ _  __| |___ _ __   |_   _|  _ _ _| |_| |___ 
+   | |/ _` | ' \/ _` / -_) '  \    | || || | '_|  _| / -_)
+   |_|\__,_|_||_\__,_\___|_|_|_|   |_| \_,_|_|  \__|_\___|
+                                                          
+              
+~~~~
+Art by Joan Stark
+
 # How to install
   * Make sure the bughouse chess variant of python-chess can be found. 
 You can download the python-chess version here: 
@@ -18,8 +34,6 @@ To install, run `python3 setup.py build` and `python3 setup.py install`
 # How to run
 
 To run on the server (and see the match visualized 'in action'), please:
-
-
   * Run the server using `node index.js` in the server folder.
   * Run the frontend by running `npm run serve` in the `vue-frontend` folder
   * Open a webbrowser on `localhost:8080`
@@ -27,6 +41,7 @@ To run on the server (and see the match visualized 'in action'), please:
   * Type in `go` in the server console or click on `go` in the frontend
   * Watch a beautiful game of Bughouse chess in action!
 
+If the server is not runinng, it's autocatically running in CLI mode (like sunsetter or other chess engines) 
 
 # Contributors
 Jannis Blüml, Maximilian Otte, Florian Netzer, Magdalena Wache, Lars Wolf
