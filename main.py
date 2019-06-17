@@ -8,7 +8,7 @@ from util import logger as lg
 import funcs
 from game.game import Game
 import numpy as np
-from pretraining import training_from_database
+from pretraining.nn import NeuralNetwork
 from util.xboardInterface import XBoardInterface
 from keras.models import load_model
 
@@ -36,9 +36,8 @@ def load_nn(path_to_nn=""):
     # Load pre trained model if path exists
     if path_to_nn == "":
         print("Path empty, loading clean nn")
-        nn = training_from_database.NeuralNetwork()
-        nn.create_network()
-        model = nn.create_network()
+        nn = NeuralNetwork()
+        model = nn.model
     else:
         print("Load nn from ", path_to_nn)
         model = load_model(path_to_nn)
@@ -82,9 +81,6 @@ def main():
         # next step is to load memory (TODO fill this step)
         # LOAD NN (TODO fill this step)
         model = load_nn(config.INITIAL_MODEL_PATH)
-            # create an untrained neural network objects from the config file
-            # If loading an existing neural netwrok, set the weights from that model
-            # otherwise just ensure the weights on the two players are the same
             # copy the config file to the run folder
         # create players (TODO fill this step)
         # self-play (TODO fill this step)
