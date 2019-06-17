@@ -32,12 +32,20 @@ class Simple_Agent():
         self.cpuct = cpuct
 
         self.MCTSsimulations = mcts_simulations
-        # self.model = model #use later
+        self.model = model  # use later
 
         # mcts saves tree info and statistics.
         self.mcts = None
 
         self.interface = interface
+
+        # to plot value and policy loss later
+        self.train_overall_loss = []
+        self.train_value_loss = []
+        self.train_policy_loss = []
+        self.val_overall_loss = []
+        self.val_value_loss = []
+        self.val_policy_loss = []
 
     ##########
     # do one simulation of a game and evaluate the outcome. Update the MC search tree in the progress.
@@ -86,25 +94,27 @@ class Simple_Agent():
             self.simulate()  # updates MCTS
 
         # get action values. pi is a probability distribution over the visited nodes.
-        # pi, values = self.get_action_values(1)
-        pi, _ = self.get_action_values(1)
+        pi, values = self.get_action_values(1)
 
         # pick the action where pi is max.
-        # action, value = self.choose_action(pi, values, tau) #Todo (later) what do we need the value for?
-        action = self.choose_action(pi, None, tau)
+        action, value = self.choose_action(pi, values, tau)
 
-        # nextState, _, _ = state.take_action(action) #only needed for nn_value
-
-        #NN_value = -self.get_preds(nextState)[0]
-        nn_value = 0  # The Neural Net is not used yet anyway. Therefore the value is set to neutral.
+        nextState, _, _ = state.take_action(action)  # only needed for nn_value
+        # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         # lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
-        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', nn_value)
+        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
 
         # return (action, pi, value, nn_value)
-        return (action, pi, None, nn_value)
+        return (action, pi, value, NN_value)
+
+    def get_preds(self, state):
+        # predict the leaf
+        inputToModel = np.array([self.model.convertToModelInput(state)])
+
+        # TODO work with the nn output
 
     ####
     # evaluate_leaf: .
@@ -128,6 +138,8 @@ class Simple_Agent():
 
             probs = np.ones(allowedActions.shape[0])  # TODO: is this the right data type? array?
             #probs = probs[allowedActions]
+
+            # ---- TODO delete above and use get_preds
 
             for idx, action in enumerate(allowedActions):
                 newState, _, _ = leaf.state.take_action(action)
@@ -192,10 +204,12 @@ class Simple_Agent():
             value_idx = np.where(value_idx_arr == 1)[0][0]
             action = inverse[value_idx][1]
 
-        # value = values[action]
+        value = values[action]
 
-        return action
-        # return action, value
+        # return action
+        return action, value
+
+    # TODO reimplement replay and predict
 
     def build_mcts(self, state):
 
