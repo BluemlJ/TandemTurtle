@@ -1,3 +1,5 @@
+from shutil import copyfile
+from config import run_folder, run_archive_folder
 import os
 import _thread
 from time import sleep
@@ -41,6 +43,9 @@ env = Game(0)
 response = os.system("nc -vz localhost 80")
 SERVER_IS_RUNNING = response == 0
 
+# if selfplay
+local_training_mode = 1
+
 
 def create_and_run_agent(name, isStarting, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
@@ -53,8 +58,25 @@ def create_and_run_agent(name, isStarting, interfaceType="websocket"):
     funcs.play_websocket_game(agent1, lg.logger_main, interface, turns_until_tau0=config.TURNS_UNTIL_TAU0, goes_first=isStarting)
 
 
+# If we want to learn instead of playing
+if local_training_mode:
+
+    # If loading an existing neural network, copy the config file to root
+    if config.INITIAL_RUN_NUMBER != None:
+        copyfile(run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + '/config.py',
+                 './config.py')
+
+    # next step is to load memory (TODO fill this step)
+    # LOAD NN (TODO fill this step)
+    # create an untrained neural network objects from the config file
+    # If loading an existing neural netwrok, set the weights from that model
+    # otherwise just ensure the weights on the two players are the same
+    # copy the config file to the run folder
+    # create players (TODO fill this step)
+    # self-play (TODO fill this step)
+
 #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
-if SERVER_IS_RUNNING:
+elif SERVER_IS_RUNNING:
     _thread.start_new_thread(create_and_run_agent, ("Agent 1", True))
     _thread.start_new_thread(create_and_run_agent, ("Agent 2", False))
     _thread.start_new_thread(create_and_run_agent, ("Agent 3", True))

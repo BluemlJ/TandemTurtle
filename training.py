@@ -14,12 +14,13 @@ If it wins, the neural network inside the best_player is switched for the neural
 
 import pickle
 import config
-from settings import run_folder, run_archive_folder
-import loggers as lg
+from config import run_folder, run_archive_folder
+import util.logger as lg
 from keras.utils import plot_model
 from importlib import reload
 import random
 from shutil import copyfile
+from util.memory import Memory
 import numpy as np
 np.set_printoptions(suppress=True)
 
@@ -32,7 +33,6 @@ env=Game()
 if config.INITIAL_RUN_NUMBER != None:
     copyfile(run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
 
-import config
 
 ######## LOAD MEMORIES IF NECESSARY ########
 
@@ -86,7 +86,7 @@ while 1:
     print('BEST PLAYER VERSION ' + str(best_player_version))
 
     ######## SELF PLAY ########
-    # TODO
+    _, memory, _, _=playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
 
     memory.clear_stmemory()
 
