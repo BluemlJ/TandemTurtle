@@ -9,10 +9,11 @@ from keras import regularizers
 from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
 from keras.models import Model
 from math import ceil
-
+from tensorflow.python.keras.callbacks import TensorBoard
+import time
 import databaseTraining.loss as loss
 import databaseTraining.config_training as cf
-from databaseTraining.data_generator import generate_value_batch, num_samples
+from databaseTraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
 class NeuralNetwork:
@@ -24,7 +25,7 @@ class NeuralNetwork:
         self.test_data_generator = None
         self.in_dim = (34, 8, 8)
         self.out_dim_value_head = 1
-        self.out_dim_policy_head = 68 * 79  # TODO: find out output dimension
+        self.out_dim_policy_head = 2272     # TODO: maybe make it dynamic not hard coded
         self.n_train = None
         self.n_val = None
         self.n_test = None
@@ -46,33 +47,86 @@ class NeuralNetwork:
         self.create_network()
         print(self.model.summary())
 
+        # Debugging
+        import tensorflow as tf
+        run_opts = tf.RunOptions(report_tensor_allocations_upon_oom=True)
+
+
+        from tensorflow.python.client import device_lib
+        print(device_lib.list_local_devices())
+
         # Compile model
         print("Compiling model")
-        self.model.compile(loss=loss.softmax_cross_entropy_with_logits, optimizer='adam')
+
+        losses = {
+            "policy_head": "categorical_crossentropy",
+            "value_head": "mean_squared_error",
+        }
+        # lossWeights = {"category_output": 1.0, "color_output": 1.0}
+        # softmax_cross_entropy_with_logits
+
+        self.model.compile(loss=losses, optimizer='adam',
+                           metrics=["accuracy", "binary_accuracy", "categorical_accuracy"],
+                           options=run_opts)
         # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
         # Maybe try:  metrics=['accuracy']
 
+        # visualizo with Tensorboard
+        # tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()))
+
         # Fit the model
         print("Fitting model")
-        self.model.fit_generator(self.test_data_generator, steps_per_epoch=ceil(self.n_train / cf.BATCH_SIZE),
+        self.model.fit_generator(self.train_data_generator,
+                                 steps_per_epoch=self.n_train,
                                  epochs=cf.EPOCHS,
-                                 verbose=1, validation_data=self.validation_data_generator,
+                                 verbose=1,
+                                 validation_data=self.validation_data_generator,
                                  validation_steps=self.n_val)
+                                 #callbacks=[tensorboard])
+
+
 
         # TODO  is this automatically on gpu? cluster
-
+        # Save the model
+        print("Saving model")
+        self.model.save("model_save")
         # evaluate the model and print the results.
         print("Evaluating model")
         self.evaluate_model()
 
     def load_data(self):
-        self.train_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.train", "data/result.train", False)
-        self.validation_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.validation", "data/result.validation", False)
-        self.test_data_generator = generate_value_batch(cf.BATCH_SIZE, "data/position.test", "data/result.test", False)
+        self.train_data_generator = generate_value_policy_batch(
+            cf.BATCH_SIZE,
+            cf.GDRIVE_FOLDER + "data/position.train",
+            cf.GDRIVE_FOLDER + "data/result.train",
+            cf.GDRIVE_FOLDER + "data/nm.train")
+        self.validation_data_generator = generate_value_policy_batch(
+            cf.BATCH_SIZE,
+            cf.GDRIVE_FOLDER + "data/position.validation",
+            cf.GDRIVE_FOLDER + "data/result.validation",
+            cf.GDRIVE_FOLDER + "data/nm.validation")
+        self.test_data_generator = generate_value_policy_batch(
+            cf.BATCH_SIZE,
+            cf.GDRIVE_FOLDER + "data/position.test",
+            cf.GDRIVE_FOLDER + "data/result.test",
+            cf.GDRIVE_FOLDER + "data/nm.test")
 
-        self.n_train = num_samples("data/result.train")
-        self.n_val = num_samples("data/result.validation")
-        self.n_test = num_samples("data/result.test")
+        # TODO remove, it is for debugging
+        sample = next(self.train_data_generator)
+        print("Train data generator shapes")
+        [[print(f"{key}: {x[key].shape}") for key in x] for x in sample]
+
+        if cf.TEST_MODE:
+            print("\n\n\n --------------------------------------- \n")
+            print("RUNNING IN TEST MODE")
+            print("\n --------------------------------------- \n\n\n")
+            self.n_train = 1000
+            self.n_val = 10
+            self.n_test = 10
+        else:
+            self.n_train = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.train") / cf.BATCH_SIZE)
+            self.n_val = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.validation") / cf.BATCH_SIZE)
+            self.n_test = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.test") / cf.BATCH_SIZE)
 
     def create_network(self):
         # create input
@@ -89,6 +143,8 @@ class NeuralNetwork:
         y = self.policy_head(x)
         x = self.value_head(x)
 
+        print("policy head: ", y)
+        print("value head: ", x)
         # create model
         self.model = Model(inputs=[main_input], outputs=[x, y])
 
@@ -174,18 +230,58 @@ class NeuralNetwork:
 
         x = Flatten()(x)
 
+        # TODO check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before
         x = Dense(
-            self.out_dim_policy_head, use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
+            self.out_dim_policy_head, use_bias=False, activation='softmax', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
         )(x)
 
         return (x)
 
+    def load_and_evaluate(self):
+        self.load_data()
+
+        from keras.models import load_model
+
+        self.model = load_model("model_save")
+
+        print("Evaluating model")
+        self.evaluate_model()
+
+
     def evaluate_model(self):
+        # caculate accuracy by hand:
+        correct = 0
+        cor_idx = []
+        for i in range(self.n_val):
+            sample = next(self.test_data_generator)
+            inputs = sample[0]
+            labels = sample[1]
+
+            print(inputs["input_1"])
+            predictions = self.model.predict(inputs)
+            for j in range(cf.BATCH_SIZE):
+                pred = np.argmax(predictions[1][j])
+                tru = np.argmax(labels["policy_head"][j])
+                if pred == tru:
+                    correct += 1
+                    cor_idx.append(pred)
+
+        acc = float(correct) / (cf.BATCH_SIZE * self.n_val)
+        print("ACC:", acc)
+        cor_idx = sorted(list(set(cor_idx)))
+
+        print(cor_idx)
+        print(len(cor_idx))
+
         scores_test = self.model.evaluate_generator(self.test_data_generator, steps=self.n_test)
         scores_train = self.model.evaluate_generator(self.train_data_generator, steps=self.n_train)
-        print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
-        print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
+        print("Metric names: ", self.model.metrics_names)
+        print("EVAUATION TEST: ", scores_test)
+        print("EVAUATION TRAIN: ", scores_train)
+        # print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
+        # print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
 
 
 nn = NeuralNetwork()
-nn.train_from_database()
+# nn.train_from_database()
+nn.load_and_evaluate()
