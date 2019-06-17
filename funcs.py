@@ -5,7 +5,7 @@ import chess
 
 # import logger as lg
 
-from game import Game, GameState
+from game.game import Game, GameState
 
 """
 def playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0,

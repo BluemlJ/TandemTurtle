@@ -2,8 +2,7 @@
 Generator functions for use with keras fit_generator
 """
 import chess
-import input_representation
-import output_representation
+from game import input_representation, output_representation
 import numpy as np
 import sys
 import time
@@ -155,7 +154,7 @@ def generate_value_policy_batch(batch_size, path_positions, path_results, path_n
      policy_head is the next move on the board shape (batch_size, 2272), input_2 is the partner board
     and value is 1 if the player to move will win, - 1 if the player will lose and 0  for draw
 
-    databaseTraining.data_generator.generate_value_policy_batch(3,"data/position.train","data/result.train","data/nm.train")
+    pretraining.data_generator.generate_value_policy_batch(3,"data/position.train","data/result.train","data/nm.train")
 
     """
 

@@ -3,13 +3,11 @@ This file contains the game rules.
 It gives the logic behind moving from one game state to another, given a chosen action. For example, given the intial board and the move g1f3, the "takeAction" method return a new game state, with the move played.
 You can replace the game.py file with any game file that conforms to the same API and the algorithm will in principal, learn strategy through self play, based on the rules you have given it.
 """
-import copy
 
 import chess
 import numpy as np
-import logging
-from chess.variant import BughouseBoards, SingleBughouseBoard
-from input_representation import board_to_planes
+from chess.variant import BughouseBoards
+from game.input_representation import board_to_planes
 
 
 # board_number  0 for left 1 for right board

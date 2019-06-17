@@ -13,14 +13,9 @@ If it wins, the neural network inside the best_player is switched for the neural
 """
 
 import pickle
-import initialise
+import config
 from settings import run_folder, run_archive_folder
 import loggers as lg
-from funcs import playMatches, playMatchesBetweenVersions
-from model import Residual_CNN
-from memory import Memory
-from agent import Agent
-from game import Game, GameState
 from keras.utils import plot_model
 from importlib import reload
 import random
@@ -34,18 +29,18 @@ lg.logger_main.info('new logs--------------------------------------------'))
 env=Game()
 
 # If loading an existing neural network, copy the config file to root
-if initialise.INITIAL_RUN_NUMBER != None:
-    copyfile(run_archive_folder + env.name + '/run' + str(initialise.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
+if config.INITIAL_RUN_NUMBER != None:
+    copyfile(run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
 
 import config
 
 ######## LOAD MEMORIES IF NECESSARY ########
 
-if initialise.INITIAL_MEMORY_VERSION == None:
+if config.INITIAL_MEMORY_VERSION == None:
     memory=Memory(config.MEMORY_SIZE)
 else:
-    print('LOADING MEMORY VERSION ' + str(initialise.INITIAL_MEMORY_VERSION) + '...')
-    memory=pickle.load(open(run_archive_folder + env.name + '/run' + str(initialise.INITIAL_RUN_NUMBER).zfill(4) + "/memory/memory" + str(initialise.INITIAL_MEMORY_VERSION).zfill(4) + ".p", "rb"))
+    print('LOADING MEMORY VERSION ' + str(config.INITIAL_MEMORY_VERSION) + '...')
+    memory=pickle.load(open(run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + "/memory/memory" + str(config.INITIAL_MEMORY_VERSION).zfill(4) + ".p", "rb"))
 
 ######## LOAD MODEL IF NECESSARY ########
 
@@ -54,10 +49,10 @@ current_NN=Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (2,) + env.grid_
 best_NN=Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (2,) + env.grid_shape, env.action_size, config.HIDDEN_CNN_LAYERS)
 
 # If loading an existing neural netwrok, set the weights from that model
-if initialise.INITIAL_MODEL_VERSION != None:
-    best_player_version=initialise.INITIAL_MODEL_VERSION
-    print('LOADING MODEL VERSION ' + str(initialise.INITIAL_MODEL_VERSION) + '...')
-    m_tmp=best_NN.read(env.name, initialise.INITIAL_RUN_NUMBER, best_player_version)
+if config.INITIAL_MODEL_VERSION != None:
+    best_player_version=config.INITIAL_MODEL_VERSION
+    print('LOADING MODEL VERSION ' + str(config.INITIAL_MODEL_VERSION) + '...')
+    m_tmp=best_NN.read(env.name, config.INITIAL_RUN_NUMBER, best_player_version)
     current_NN.model.set_weights(m_tmp.get_weights())
     best_NN.model.set_weights(m_tmp.get_weights())
 # otherwise just ensure the weights on the two players are the same

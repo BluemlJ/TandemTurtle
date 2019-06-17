@@ -3,7 +3,7 @@ This contains the Node, Edge and MCTS classes, that constitute a Monte Carlo Sea
 """
 
 import numpy as np
-import logger as lg
+from util import logger as lg
 
 
 class Node:

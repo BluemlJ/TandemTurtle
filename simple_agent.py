@@ -9,7 +9,7 @@ import random
 
 import mcts as mc
 import eval
-import logger as lg
+from util import logger as lg
 
 
 class Simple_Agent():

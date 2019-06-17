@@ -8,7 +8,7 @@ import bz2
 import os
 
 url = "https://www.bughouse-db.org/dl/"
-dir = "data/"
+dir = "../pretraining/fics_data"
 
 page = requests.get(url)
 webpage = html.fromstring(page.content)

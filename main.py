@@ -3,12 +3,12 @@ import _thread
 from time import sleep
 from simple_agent import Simple_Agent
 import config
-import logger as lg
+from util import logger as lg
 import funcs
-from game import Game, GameState
+from game.game import Game
 import numpy as np
 
-from xboardInterface import XBoardInterface
+from util.xboardInterface import XBoardInterface
 
 intro_message =\
 """

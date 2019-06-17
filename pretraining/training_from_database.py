@@ -11,9 +11,8 @@ from keras.models import Model
 from math import ceil
 from tensorflow.python.keras.callbacks import TensorBoard
 import time
-import databaseTraining.loss as loss
-import databaseTraining.config_training as cf
-from databaseTraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
+import pretraining.config_training as cf
+from pretraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
 class NeuralNetwork:
@@ -280,6 +279,22 @@ class NeuralNetwork:
         print("EVAUATION TRAIN: ", scores_train)
         # print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
         # print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
+
+
+def softmax_cross_entropy_with_logits(y_true, y_pred):
+    print("Loss used :-)")
+    p = y_pred
+    pi = y_true
+
+    zero = tf.zeros(shape=tf.shape(pi), dtype=tf.float32)
+    where = tf.equal(pi, zero)
+
+    negatives = tf.fill(tf.shape(pi), -100.0)
+    p = tf.where(where, negatives, p)
+
+    loss = tf.nn.softmax_cross_entropy_with_logits(labels=pi, logits=p)
+
+    return loss
 
 
 nn = NeuralNetwork()

@@ -9,7 +9,7 @@ Loads all needed constants for the Crazyhouse game internally.
 """
 import chess.variant
 import numpy as np
-from constants import (
+from game.constants import (
     LABELS,
     LABELS_MIRRORED,
     MV_LOOKUP,

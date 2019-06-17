@@ -8,7 +8,7 @@ Created on 20.06.18
 Input representation for a single Bugouse board state which is passed to the neural network
 """
 
-from constants import (
+from game.constants import (
     BOARD_HEIGHT,
     BOARD_WIDTH,
     CHANNEL_MAPPING_CONST,
@@ -21,7 +21,7 @@ from constants import (
     PIECES,
     chess,
 )
-from util import MATRIX_NORMALIZER, get_board_position_index, get_row_col, np
+from game.util import MATRIX_NORMALIZER, get_board_position_index, get_row_col, np
 from chess.variant import SingleBughouseBoard
 
 

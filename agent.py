@@ -12,19 +12,6 @@ The replay method:
 
 """
 
-import numpy as np
-import random
-
-import MCTS as mc
-from game import GameState
-
-import config
-import loggers as lg
-import time
-
-import matplotlib.pyplot as plt
-import pylab as pl
-
 
 class User():
     def __init__(self, name, state_size, action_size):

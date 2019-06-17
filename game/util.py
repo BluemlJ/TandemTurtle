@@ -12,7 +12,7 @@ import copy
 import numpy as np
 
 
-from constants import (
+from game.constants import (
     BOARD_HEIGHT,
     BOARD_WIDTH,
     CHANNEL_MAPPING_CONST,

@@ -2,7 +2,7 @@ import os
 import re
 import csv
 import pandas as pd
-path = '../data'
+path = '../pretraining/fics_data'
 
 files = []
 # r=root, d=directories, f = files
