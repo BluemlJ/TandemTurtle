@@ -102,6 +102,8 @@ class Simple_Agent():
 
         nextState, _, _ = state.take_action(action)  # only needed for nn_value
         # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
+        # TODO implement NN value!! only temporary
+        NN_value = 0.0
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)

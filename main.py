@@ -45,7 +45,7 @@ def load_nn(path_to_nn=""):
     return model
 
 
-def create_and_run_agent(name, isStarting, interfaceType="websocket"):
+def create_and_run_agent(name, isStarting, env, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
     agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, None, interface)
@@ -68,7 +68,7 @@ def main():
     SERVER_IS_RUNNING = response == 0
 
     # if selfplay
-    local_training_mode = 1
+    local_training_mode = 0
 
     # If we want to learn instead of playing
     if local_training_mode:
@@ -88,16 +88,16 @@ def main():
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env))
 
         while True:
             sleep(10)
 
     else:
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", False, "commandlineInterface"))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", False, env, "commandlineInterface"))
 
         while True:
             sleep(10)
