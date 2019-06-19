@@ -164,7 +164,7 @@ class NeuralNetwork:
 
         x = Flatten()(x)
 
-        # TODO check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before
+        # check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before (I removed the to do because I think it does make sense.
         x = Dense(
             self.out_dim_policy_head, use_bias=False, activation='softmax', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
         )(x)
