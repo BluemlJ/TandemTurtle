@@ -41,7 +41,9 @@ def load_nn(path_to_nn=""):
     else:
         path = os.getcwd()
         print("Load nn from ", path + path_to_nn)
-        model = load_model(path + path_to_nn)
+        nn = NeuralNetwork()
+        nn.model = load_model(path + path_to_nn)
+        model = nn.model
 
     return model
 
@@ -49,9 +51,10 @@ def load_nn(path_to_nn=""):
 def create_and_run_agent(name, isStarting, env, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
-    nn = load_nn(config.INITIAL_MODEL_PATH)
-
-    agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, nn, interface)
+    # model = load_nn(config.INITIAL_MODEL_PATH)
+    # TODO loading of the same model results into problemos 3 threads die
+    model = None
+    agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
 
     while not interface.gameStarted:
         sleep(0.1)

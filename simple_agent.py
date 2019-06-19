@@ -9,6 +9,7 @@ import random
 
 import mcts as mc
 import eval
+from game import input_representation
 from util import logger as lg
 
 
@@ -114,15 +115,16 @@ class Simple_Agent():
 
     def get_preds(self, state):
         # predict the leaf
+        board = state.board
+        partner_board = state.partner_board
 
-        print(self.model)
-        print(self.model.summary())
-        exit()
+        x1 = input_representation.board_to_planes(board)
+        x1 = np.expand_dims(x1, axis=0)
+        x2 = input_representation.board_to_planes(partner_board)
+        x2 = np.expand_dims(x2, axis=0)
 
-        inputToModel = np.array([self.model.convertToModelInput(state)])
+        inputToModel = [x1, x2]
 
-        print("not implemented, input to model not defined")
-        exit()
         predictions = self.model.predict(inputToModel)
         # value head should be one value to say how good my state is
         value_head = predictions[0]
