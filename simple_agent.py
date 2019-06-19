@@ -9,6 +9,7 @@ import random
 
 import mcts as mc
 import eval
+from game import input_representation
 from util import logger as lg
 
 
@@ -112,7 +113,15 @@ class Simple_Agent():
 
     def get_preds(self, state):
         # predict the leaf
-        inputToModel = np.array([self.model.convertToModelInput(state)])
+        board = state.board
+        partner_board = state.partner_board
+
+        x1 = input_representation.board_to_planes(board)
+        x1 = np.expand_dims(x1, axis=0)
+        x2 = input_representation.board_to_planes(partner_board)
+        x2 = np.expand_dims(x2, axis=0)
+
+        inputToModel = [x1, x2]
 
         # TODO work with the nn output
 
