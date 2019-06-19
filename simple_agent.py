@@ -114,9 +114,34 @@ class Simple_Agent():
 
     def get_preds(self, state):
         # predict the leaf
+
+        print(self.model)
+        print(self.model.summary())
+        exit()
+
         inputToModel = np.array([self.model.convertToModelInput(state)])
 
-        # TODO work with the nn output
+        print("not implemented, input to model not defined")
+        exit()
+        predictions = self.model.predict(inputToModel)
+        # value head should be one value to say how good my state is
+        value_head = predictions[0]
+        # policy head gives a 2272 big vector with prob for each state
+        policy_head = predictions[1]
+
+        print(value_head)
+        print(policy_head)
+
+        allowedActions = state.allowedActions
+
+        mask = np.ones(policy_head.shape, dtype=bool)
+        mask[allowedActions] = False
+        policy_head[mask] = -100
+
+        odds = np.exp(policy_head)
+        probs = odds / np.sum(odds)
+
+        return value_head, probs, allowedActions
 
     ####
     # evaluate_leaf: .

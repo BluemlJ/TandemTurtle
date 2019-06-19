@@ -4,10 +4,10 @@ TODO NextMove/policy
 TODO shuffle data after every epoch
 """
 import numpy as np
-from pretraining.nn import NeuralNetwork
+from nn import NeuralNetwork
 from keras.models import load_model
-import pretraining.config_training as cf
-from pretraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
+import config_training as cf
+from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
 def train(model):
@@ -24,14 +24,6 @@ def train(model):
     model.create_network()
     print(model.model.summary())
 
-    # Debugging
-    import tensorflow as tf
-    run_opts = tf.RunOptions(report_tensor_allocations_upon_oom=True)
-
-
-    from tensorflow.python.client import device_lib
-    print(device_lib.list_local_devices())
-
     # Compile model
     print("Compiling model")
 
@@ -43,8 +35,7 @@ def train(model):
     # softmax_cross_entropy_with_logits
 
     model.model.compile(loss=losses, optimizer='adam',
-                       metrics=["accuracy", "binary_accuracy", "categorical_accuracy"],
-                       options=run_opts)
+                       metrics=["accuracy", "binary_accuracy", "categorical_accuracy"])
     # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
     # Maybe try:  metrics=['accuracy']
 
@@ -70,9 +61,10 @@ def train(model):
     # self.evaluate_model()
 
 
-def load_pretrained(self, model_path):
+def load_pretrained(model_path):
     print("Load Model:")
-    self.model = load_model(model_path)
+    model = load_model(model_path)
+    return model
 
 
 def evaluate_model(self):
@@ -127,8 +119,9 @@ def softmax_cross_entropy_with_logits(y_true, y_pred):
 
 def main():
     network = NeuralNetwork()
-    # network.load_pretrained("save_model")
-    train(network)
+    network.model = load_pretrained("model_save")
+    #train(network)
+    exit()
     network.evaluate()
 
 

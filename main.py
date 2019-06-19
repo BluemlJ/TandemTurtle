@@ -39,8 +39,9 @@ def load_nn(path_to_nn=""):
         nn = NeuralNetwork()
         model = nn.model
     else:
-        print("Load nn from ", path_to_nn)
-        model = load_model(path_to_nn)
+        path = os.getcwd()
+        print("Load nn from ", path + path_to_nn)
+        model = load_model(path + path_to_nn)
 
     return model
 
@@ -48,7 +49,9 @@ def load_nn(path_to_nn=""):
 def create_and_run_agent(name, isStarting, env, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
-    agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, None, interface)
+    nn = load_nn(config.INITIAL_MODEL_PATH)
+
+    agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, nn, interface)
 
     while not interface.gameStarted:
         sleep(0.1)

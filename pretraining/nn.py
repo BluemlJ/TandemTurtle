@@ -79,8 +79,6 @@ class NeuralNetwork:
         y = self.policy_head(x)
         x = self.value_head(x)
 
-        print("policy head: ", y)
-        print("value head: ", x)
         # create model
         self.model = Model(inputs=[main_input], outputs=[x, y])
 

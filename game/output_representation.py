@@ -7,6 +7,13 @@ Created on 24.09.18
 Provides all methods to convert a move to policy representation and back
 Loads all needed constants for the Crazyhouse game internally.
 """
+import os
+import sys
+
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
 import chess.variant
 import numpy as np
 from game.constants import (
