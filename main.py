@@ -44,7 +44,6 @@ def load_nn(path_to_nn=""):
         nn = NeuralNetwork()
         nn.model = load_model(path + path_to_nn)
         model = nn.model
-
     return model
 
 
@@ -72,7 +71,9 @@ def main():
 
     # if selfplay
     local_training_mode = 0
+
     model = load_nn(config.INITIAL_MODEL_PATH)
+    model._make_predict_function()
 
     # If we want to learn instead of playing
     if local_training_mode:

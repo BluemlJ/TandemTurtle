@@ -29,6 +29,7 @@ class NeuralNetwork:
         self.n_train = None
         self.n_val = None
         self.n_test = None
+        # Todo define these values already here
 
         self.create_network()
 
@@ -68,7 +69,7 @@ class NeuralNetwork:
 
     def create_network(self):
         # create input
-        main_input = Input(shape=self.in_dim)
+        main_input = Input(shape=self.in_dim, name="inputs")
 
         # apply convolutional layer
         x = self.convolutional_layer(main_input)

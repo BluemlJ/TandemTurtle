@@ -3,10 +3,8 @@ Contains class Simple_Agent
 Objects of Simple_Agent class are simple Bughouse players that do not use a
 trained model. The evaluation is done by a hard-coded evaluation function as defined in eval.py
 """
-
 import numpy as np
 import random
-
 import mcts as mc
 import eval
 from game import input_representation, output_representation
@@ -124,11 +122,11 @@ class Simple_Agent():
         x2 = np.expand_dims(x2, axis=0)
 
         input_to_model = {"input_1": x1,
-                        "input_2": x2}
+                          "input_2": x2}
+        actualInput = {"inputs": np.concatenate((x1, x2))}
 
-        print(input_to_model)
-
-        predictions = self.model.predict(input_to_model)
+        predictions = self.model.predict(actualInput)
+        print("predicted")
         # value head should be one value to say how good my state is
         value_head = predictions[0]
         # policy head gives a 2272 big vector with prob for each state
