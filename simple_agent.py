@@ -6,7 +6,6 @@ trained model. The evaluation is done by a hard-coded evaluation function as def
 import numpy as np
 import random
 import mcts as mc
-import eval
 from game import input_representation, output_representation
 from util import logger as lg
 
