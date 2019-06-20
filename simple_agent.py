@@ -129,17 +129,20 @@ class Simple_Agent():
         # policy head gives a 2272 big vector with prob for each state
         policy_head = predictions[1][0]
 
-        allowedActions = [output_representation.move_to_policy_idx
-                          (move, is_white_to_move=board.turn) for move in state.allowedActions]
+        allowed_actions = [output_representation.move_to_policy_idx
+                           (move, is_white_to_move=board.turn) for move in state.allowedActions]
 
         mask = np.ones(policy_head.shape, dtype=bool)
-        mask[allowedActions] = False
+        mask[allowed_actions] = False
         policy_head[mask] = -100
 
         odds = np.exp(policy_head)
         probs = odds / np.sum(odds)
 
-        return value_head, probs, allowedActions
+        allowed_actions = [output_representation.move_to_policy_idx
+                           (idx, is_white_to_move=board.turn) for idx in allowed_actions]
+
+        return value_head, probs, allowed_actions
 
     ####
     # evaluate_leaf: .
