@@ -7,15 +7,6 @@ Created on 24.09.18
 Provides all methods to convert a move to policy representation and back
 Loads all needed constants for the Crazyhouse game internally.
 """
-import os
-import sys
-
-PACKAGE_PARENT = '..'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-
-import chess.variant
-import numpy as np
 from game.constants import (
     LABELS,
     LABELS_MIRRORED,
@@ -23,6 +14,14 @@ from game.constants import (
     MV_LOOKUP_MIRRORED,
     NB_LABELS,
 )
+import numpy as np
+import chess.variant
+import os
+import sys
+
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 
 def move_to_policy(move, is_white_to_move=True):
@@ -34,10 +33,7 @@ def move_to_policy(move, is_white_to_move=True):
     :return: Policy numpy vector in boolean format
     """
 
-    if is_white_to_move is True:
-        mv_idx = MV_LOOKUP[move.uci()]
-    else:
-        mv_idx = MV_LOOKUP_MIRRORED[move.uci()]
+    mv_idx = move_to_policy_idx(move, is_white_to_move)
 
     policy_vec = np.zeros(NB_LABELS, dtype=np.bool)
     # set the bit to 1 at the according move index
@@ -73,6 +69,11 @@ def policy_to_move(policy_vec_clean, is_white_to_move=True):
 
     mv_idx = np.argmax(policy_vec_clean)
 
+    return policy_idx_to_move(mv_idx, is_white_to_move)
+
+
+def policy_idx_to_move(mv_idx, is_white_to_move=True):
+
     # ensure that the provided mv_idx is legal
     assert 0 <= mv_idx < NB_LABELS
 
@@ -82,7 +83,6 @@ def policy_to_move(policy_vec_clean, is_white_to_move=True):
         mv_uci = LABELS_MIRRORED[mv_idx]
 
     move = chess.Move.from_uci(mv_uci)
-
     return move
 
 
