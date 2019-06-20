@@ -7,7 +7,7 @@
 INITIAL_RUN_NUMBER = None
 INITIAL_MODEL_VERSION = None
 INITIAL_MEMORY_VERSION = None
-INITIAL_MODEL_PATH = "/run/models/simple_model_v1"
+INITIAL_MODEL_PATH = "" # ""/run/models/simple_model_v1"
 
 # SELF PLAY
 EPISODES = 30
