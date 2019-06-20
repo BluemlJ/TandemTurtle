@@ -72,7 +72,7 @@ def policy_to_move(policy_vec_clean, is_white_to_move=True):
     return policy_idx_to_move(mv_idx, is_white_to_move)
 
 
-def policy_idx_to_move(mv_idx, is_white_to_move=True):
+def policy_idx_to_move(mv_idx, is_white_to_move=True, board_id=None):
 
     # ensure that the provided mv_idx is legal
     assert 0 <= mv_idx < NB_LABELS
@@ -83,6 +83,7 @@ def policy_idx_to_move(mv_idx, is_white_to_move=True):
         mv_uci = LABELS_MIRRORED[mv_idx]
 
     move = chess.Move.from_uci(mv_uci)
+    move.board_id = board_id
     return move
 
 
