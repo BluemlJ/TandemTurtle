@@ -73,7 +73,7 @@ class Simple_Agent():
     #       or 0 (after some time, when the simple_agent starts playing deterministically.
     # returns:
     # action - the chosen action,
-    # pi - the priorities (?) of the different actions,
+    # edge_visited_rates - how often (relatively) the actions/edges were visited by mcts
     # value - (?)
     # nn_value - zero in this simple case
     # .
@@ -92,24 +92,22 @@ class Simple_Agent():
             lg.logger_mcts.info('***************************')
             self.simulate()  # updates MCTS
 
-        # get action values. pi is a probability distribution over the visited nodes.
-        pi, values = self.get_action_values()
+        # get action values. edge_visited_rate are, how frequently an edge/action is visited
+        edge_visited_rates, values = self.get_action_values()
 
-        # pick the action where pi is max.
-        action, value = self.choose_action(pi, values, higher_noise)
+        # pick the action where visited_rate is max.
+        action, value = self.choose_action(edge_visited_rates, values, higher_noise)
 
         nextState, _, _ = state.take_action(action)  # only needed for nn_value
         # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
         # TODO implement NN value!! only temporary
         NN_value = self.get_preds(nextState)[0]
 
-        lg.logger_mcts.info('ACTION VALUES...%s', pi)
+        lg.logger_mcts.info('ACTION VALUES...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         # lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
-
-        # return (action, pi, value, nn_value)
-        return (action, pi, value, NN_value)
+        return (action, edge_visited_rates, value, NN_value)
 
     def get_preds(self, state):
         # predict the leaf
@@ -179,45 +177,47 @@ class Simple_Agent():
     def get_action_values(self):
 
         edges = self.mcts.root.edges
-        # old:
-        # pi = np.zeros(self.action_size, dtype=np.integer)
-        # values = np.zeros(self.action_size, dtype=np.float32)
-        pi = {}
+        edge_visited_rates = {}
         values = {}
-        pi_total = 0
+        rates_total = 0
 
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
-            pi_val = edge.stats['N']
-            pi_total += pi_val
-            pi[action] = pi_val
+            edge_visited_rate = edge.stats['N']
+            rates_total += edge_visited_rate
+            edge_visited_rates[action] = edge_visited_rate
             values[action] = edge.stats['Q']
 
-        if pi_total == 0:
-            pi_total = 1
+        # prevent division by zero error. In case there are no edges visited the actions/edges can be chosen arbitrarily.
+        if rates_total == 0:
+            rates_total = 1
 
-        for key, value in pi.items():
-            # normalize pi to sum up to 1 (probability distribution)
-            pi[key] = value / (pi_total * 1.0)
+        for key, value in edge_visited_rates.items():
+            # normalize edge_visited_rate to sum up to 1 (probability distribution)
+            edge_visited_rates[key] = value / (rates_total * 1.0)
 
-        return pi, values
+        return edge_visited_rates, values
 
     ####
-    # choose_action: pick the action where pi is max.
-    # param: pi, values (map actions to their values), higher_noise (in the first few rounds the noise is higher)
+    # choose_action: pick the action where the visited rate is max. In the first few rounds:
+    # choose an action with higher probability, where the visited rate is higher.
+    # param: edges_visited_rates, values (map actions to their values), higher_noise (in the first few rounds the noise is higher)
     # return: action and its corresponding value
     ####
 
-    def choose_action(self, pi, values, higher_noise):
-        inverse = [(value, key) for key, value in pi.items()]
-        pi_values = [value for value, key in inverse]
+    def choose_action(self, edges_visited_rates, values, higher_noise):
+        # invert dictionary - swap key and value. Now visited rate is in front, action is second
+        # [(action1, visited_rate1),...] -> [(visited_rate1, action1), ...]
+        # TODO remove square brackets for performance
+        inverse = [(value, key) for key, value in edges_visited_rates.items()]
+        visited_rates = [value for value, key in inverse]  # without the corresponding actions/edges
 
         if higher_noise == 0:
-            action_idx = [i for i, x in enumerate(pi_values) if x == max(pi_values)]
+            action_idx = [i for i, vr in enumerate(visited_rates) if vr == max(visited_rates)]
             actions = [inverse[idx][1] for idx in action_idx]
             action = random.choice(actions)
         else:
-            value_idx_arr = np.random.multinomial(1, pi_values)
+            value_idx_arr = np.random.multinomial(1, visited_rates)
             value_idx = np.where(value_idx_arr == 1)[0][0]
             action = inverse[value_idx][1]
 
