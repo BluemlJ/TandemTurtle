@@ -48,12 +48,11 @@ def load_nn(path_to_nn=""):
     return model
 
 
-def create_and_run_agent(name, isStarting, env, interfaceType="websocket"):
+def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
-    # model = load_nn(config.INITIAL_MODEL_PATH)
+    #
     # TODO loading of the same model results into problemos 3 threads die
-    model = None
     agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
 
     while not interface.gameStarted:
@@ -75,6 +74,7 @@ def main():
 
     # if selfplay
     local_training_mode = 0
+    model = load_nn(config.INITIAL_MODEL_PATH)
 
     # If we want to learn instead of playing
     if local_training_mode:
@@ -91,19 +91,18 @@ def main():
         # create players (TODO fill this step)
         # self-play (TODO fill this step)
 
-
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env, model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env, model))
 
         while True:
             sleep(10)
 
     else:
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", False, env, "commandlineInterface"))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", False, env, model, "commandlineInterface"))
 
         while True:
             sleep(10)

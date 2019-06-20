@@ -10,7 +10,9 @@ from keras.models import Model
 from math import ceil
 from tensorflow.python.keras.callbacks import TensorBoard
 import time
+# import config_training as cf
 import pretraining.config_training as cf
+# from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 from pretraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
