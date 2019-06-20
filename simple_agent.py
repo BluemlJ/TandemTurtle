@@ -93,7 +93,7 @@ class Simple_Agent():
             self.simulate()  # updates MCTS
 
         # get action values. pi is a probability distribution over the visited nodes.
-        pi, values = self.get_action_values(1)
+        pi, values = self.get_action_values()
 
         # pick the action where pi is max.
         action, value = self.choose_action(pi, values, higher_noise)
@@ -178,7 +178,7 @@ class Simple_Agent():
 
         return (eval_value, breadcrumbs)
 
-    def get_action_values(self, tau):  # TODO: get rid of this tau or give it a better name after we know what it does
+    def get_action_values(self):
 
         edges = self.mcts.root.edges
         # old:
@@ -190,7 +190,7 @@ class Simple_Agent():
 
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
-            pi_val = pow(edge.stats['N'], 1 / tau)  # TODO (later) why not use p[action = edge.stats['N'] directly?
+            pi_val = edge.stats['N']
             pi_total += pi_val
             pi[action] = pi_val
             values[action] = edge.stats['Q']
