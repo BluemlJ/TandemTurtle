@@ -122,30 +122,26 @@ class Simple_Agent():
         input_to_model = [x1, x2]
 
         predictions = self.model.predict(input_to_model)
-        print("predicted")
         # value head should be one value to say how good my state is
         value_head = predictions[0]
         # policy head gives a 2272 big vector with prob for each state
-        policy_head = predictions[1]
+        policy_head = predictions[1][0]
 
-        print(value_head)
-        print(policy_head)
+        allowed_action_idxs = [output_representation.move_to_policy_idx
+                               (move, is_white_to_move=board.turn) for move in state.allowedActions]
 
-        allowedActions = [output_representation.move_to_policy
-                          (move, is_white_to_move=board.turn) for move in state.allowedActions]
-
-        print(np.array(allowedActions).shape)
-        # shape 20, 2272
-        print("po shape :", policy_head.shape)
-        exit()
         mask = np.ones(policy_head.shape, dtype=bool)
-        mask[allowedActions] = False
+        mask[allowed_action_idxs] = False
         policy_head[mask] = -100
 
         odds = np.exp(policy_head)
         probs = odds / np.sum(odds)
 
-        return value_head, probs, allowedActions
+        allowed_actions = [output_representation.policy_idx_to_move
+                           (idx, is_white_to_move=board.turn) for idx in allowed_action_idxs]
+
+        print(allowed_actions)
+        return value_head, probs, allowed_action_idxs, allowed_actions
 
     ####
     # evaluate_leaf: .
@@ -154,14 +150,14 @@ class Simple_Agent():
         lg.logger_mcts.info('------EVALUATING LEAF------')
         if done == 0:
 
-            value, probs, allowedActions = self.get_preds(leaf.state)
+            value, probs, allowed_action_idxs, allowed_actions = self.get_preds(leaf.state)
             lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-            probs = probs[allowedActions]
+            probs = probs[allowed_action_idxs]
 
             # ---- TODO delete above and use get_preds
 
-            for idx, action in enumerate(allowedActions):
+            for idx, action in enumerate(allowed_actions):
                 newState, _, _ = leaf.state.take_action(action)
                 if newState.id not in self.mcts.tree:
                     node = mc.Node(newState)
