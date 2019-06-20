@@ -94,7 +94,7 @@ class MCTS:
 
                 U = self.cpuct * \
                     edge.stats['P'] * \
-                    np.sqrt(Nb) / (1 + edge.stats['N'])
+                    np.sqrt(Nb / (1 + edge.stats['N']))
 
                 Q = edge.stats['Q']
 
