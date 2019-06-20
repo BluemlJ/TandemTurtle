@@ -9,7 +9,7 @@ import random
 
 import mcts as mc
 import eval
-from game import input_representation
+from game import input_representation, output_representation
 from util import logger as lg
 
 
@@ -137,7 +137,7 @@ class Simple_Agent():
         print(value_head)
         print(policy_head)
 
-        allowedActions = state.allowedActions
+        allowedActions = [output_representation.move_to_policy(move, is_white_to_move=board.turn)for move in state.allowedActions]
 
         mask = np.ones(policy_head.shape, dtype=bool)
         mask[allowedActions] = False
@@ -155,21 +155,10 @@ class Simple_Agent():
         lg.logger_mcts.info('------EVALUATING LEAF------')
         if done == 0:
 
-            allowedActions = np.array(leaf.state.allowedActions)  # no rollouts. use static eval fct instead
+            value, probs, allowedActions = self.get_preds(leaf.state)
+            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-            # In first run leaf is empty so set value to fixed value
-            if leaf.edges:
-                parent_edge = leaf.edges[0]  # TODO: is the first edge of a node really the parent edge? Easier Alternative: use absolute evaluation fctn for the value.
-                #eval_value = eval.eval_move(parent_edge.action, parent_edge.inNode)
-                eval_value = eval.simple_eval_gamestate(leaf.state)
-            else:
-                eval_value = 0     # TODO (later) what value?
-            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, eval_value)
-
-            # no rollouts. use static eval fctn
-
-            probs = np.ones(allowedActions.shape[0])  # TODO: is this the right data type? array?
-            #probs = probs[allowedActions]
+            probs = probs[allowedActions]
 
             # ---- TODO delete above and use get_preds
 

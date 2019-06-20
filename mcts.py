@@ -92,7 +92,6 @@ class MCTS:
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
-                # Todo: I replaced np.logs(Nb) with Nb since it will Nan else
                 U = self.cpuct * \
                     edge.stats['P'] * \
                     np.sqrt(Nb) / (1 + edge.stats['N'])

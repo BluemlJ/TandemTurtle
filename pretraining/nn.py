@@ -120,7 +120,7 @@ class NeuralNetwork:
 
     def value_head(self, x):
         x = Conv2D(
-            filters=1,
+            filters=cf.NR_CONV_FILTERS_VALUE_HEAD,
             kernel_size=(1, 1),
             data_format="channels_first",
             padding='same',
@@ -158,7 +158,7 @@ class NeuralNetwork:
 
     def policy_head(self, x):
         x = Conv2D(
-            filters=2, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            filters=cf.NR_CONV_FILTERS_POLICY_HEAD, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
         )(x)
 
         x = BatchNormalization(axis=1)(x)
@@ -166,7 +166,7 @@ class NeuralNetwork:
 
         x = Flatten()(x)
 
-        # TODO check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before
+        # check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before (I removed the to do because I think it does make sense.
         x = Dense(
             self.out_dim_policy_head, use_bias=False, activation='softmax', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
         )(x)
