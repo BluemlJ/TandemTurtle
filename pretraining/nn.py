@@ -118,7 +118,7 @@ class NeuralNetwork:
 
     def value_head(self, x):
         x = Conv2D(
-            filters=1,
+            filters=cf.NR_CONV_FILTERS_VALUE_HEAD,
             kernel_size=(1, 1),
             data_format="channels_first",
             padding='same',
@@ -156,7 +156,7 @@ class NeuralNetwork:
 
     def policy_head(self, x):
         x = Conv2D(
-            filters=2, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            filters=cf.NR_CONV_FILTERS_POLICY_HEAD, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
         )(x)
 
         x = BatchNormalization(axis=1)(x)
