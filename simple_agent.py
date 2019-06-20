@@ -124,22 +124,14 @@ class Simple_Agent():
         input_to_model = [x1, x2]
 
         predictions = self.model.predict(input_to_model)
-        print("predicted")
         # value head should be one value to say how good my state is
         value_head = predictions[0]
         # policy head gives a 2272 big vector with prob for each state
-        policy_head = predictions[1]
+        policy_head = predictions[1][0]
 
-        print(value_head)
-        print(policy_head)
-
-        allowedActions = [output_representation.move_to_policy
+        allowedActions = [output_representation.move_to_policy_idx
                           (move, is_white_to_move=board.turn) for move in state.allowedActions]
 
-        print(np.array(allowedActions).shape)
-        # shape 20, 2272
-        print("po shape :", policy_head.shape)
-        exit()
         mask = np.ones(policy_head.shape, dtype=bool)
         mask[allowedActions] = False
         policy_head[mask] = -100

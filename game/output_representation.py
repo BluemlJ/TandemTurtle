@@ -42,8 +42,24 @@ def move_to_policy(move, is_white_to_move=True):
     policy_vec = np.zeros(NB_LABELS, dtype=np.bool)
     # set the bit to 1 at the according move index
     policy_vec[mv_idx] = 1
-
     return policy_vec
+
+
+def move_to_policy_idx(move, is_white_to_move=True):
+    """
+    Returns a numpy vector with the bit set to 1 a the according index (one hot encoding)
+
+    :param move Python chess obj. defining a move
+    :param is_white_to_move: Define the current player turn
+    :return: Policy numpy vector in boolean format
+    """
+
+    if is_white_to_move is True:
+        mv_idx = MV_LOOKUP[move.uci()]
+    else:
+        mv_idx = MV_LOOKUP_MIRRORED[move.uci()]
+
+    return mv_idx
 
 
 def policy_to_move(policy_vec_clean, is_white_to_move=True):
