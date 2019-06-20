@@ -139,7 +139,7 @@ class Simple_Agent():
         odds = np.exp(policy_head)
         probs = odds / np.sum(odds)
 
-        allowed_actions = [output_representation.move_to_policy_idx
+        allowed_actions = [output_representation.policy_idx_to_move
                            (idx, is_white_to_move=board.turn) for idx in allowed_actions]
 
         return value_head, probs, allowed_actions
