@@ -51,9 +51,7 @@ def load_nn(path_to_nn=""):
 def create_and_run_agent(name, isStarting, env, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
-    # model = load_nn(config.INITIAL_MODEL_PATH)
-    # TODO loading of the same model results into problemos 3 threads die
-    model = None
+    model = load_nn(config.INITIAL_MODEL_PATH)
     agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
 
     while not interface.gameStarted:
@@ -87,10 +85,9 @@ def main():
         # next step is to load memory (TODO fill this step)
         # LOAD NN (TODO fill this step)
         model = load_nn(config.INITIAL_MODEL_PATH)
-            # copy the config file to the run folder
+        # copy the config file to the run folder
         # create players (TODO fill this step)
         # self-play (TODO fill this step)
-
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
