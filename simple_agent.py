@@ -92,22 +92,21 @@ class Simple_Agent():
             lg.logger_mcts.info('***************************')
             self.simulate()  # updates MCTS
 
-        # get action values. edge_visited_rate are, how frequently an edge/action is visited
-        edge_visited_rates, values = self.get_action_values()
+        # get action values. edge_visited_rates are, how frequently an edge/action is visited
+        edge_visited_rates, win_rates = self.get_action_values()
 
         # pick the action where visited_rate is max.
-        action, value = self.choose_action(edge_visited_rates, values, higher_noise)
+        action, win_rate = self.choose_action(edge_visited_rates, win_rates, higher_noise)
 
         nextState, _, _ = state.take_action(action)  # only needed for nn_value
         # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
         # TODO implement NN value!! only temporary
         NN_value = self.get_preds(nextState)[0]
 
-        lg.logger_mcts.info('ACTION VALUES...%s', edge_visited_rates)
+        lg.logger_mcts.info('EDGE_VISITED_RATE...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
-        # lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
-        return (action, edge_visited_rates, value, NN_value)
+        return (action, edge_visited_rates, win_rate, NN_value)
 
     def get_preds(self, state):
         # predict the leaf
@@ -178,7 +177,7 @@ class Simple_Agent():
 
         edges = self.mcts.root.edges
         edge_visited_rates = {}
-        values = {}
+        win_rates = {}
         rates_total = 0
 
         for action, edge in edges:
@@ -186,7 +185,7 @@ class Simple_Agent():
             edge_visited_rate = edge.stats['N']
             rates_total += edge_visited_rate
             edge_visited_rates[action] = edge_visited_rate
-            values[action] = edge.stats['Q']
+            win_rates[action] = edge.stats['Q']
 
         # prevent division by zero error. In case there are no edges visited the actions/edges can be chosen arbitrarily.
         if rates_total == 0:
@@ -196,7 +195,7 @@ class Simple_Agent():
             # normalize edge_visited_rate to sum up to 1 (probability distribution)
             edge_visited_rates[key] = value / (rates_total * 1.0)
 
-        return edge_visited_rates, values
+        return edge_visited_rates, win_rates
 
     ####
     # choose_action: pick the action where the visited rate is max. In the first few rounds:
@@ -205,7 +204,7 @@ class Simple_Agent():
     # return: action and its corresponding value
     ####
 
-    def choose_action(self, edges_visited_rates, values, higher_noise):
+    def choose_action(self, edges_visited_rates, win_rates, higher_noise):
         # invert dictionary - swap key and value. Now visited rate is in front, action is second
         # [(action1, visited_rate1),...] -> [(visited_rate1, action1), ...]
         # TODO remove square brackets for performance
@@ -221,10 +220,10 @@ class Simple_Agent():
             value_idx = np.where(value_idx_arr == 1)[0][0]
             action = inverse[value_idx][1]
 
-        value = values[action]
+        win_rate = win_rates[action]
 
         # return action
-        return action, value
+        return action, win_rate
 
     # TODO reimplement replay and predict
 
