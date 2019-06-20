@@ -1,8 +1,6 @@
 
 # This is where you set the key parameters that influence the algorithm.
 
-# f.e
-
 # Initialise
 INITIAL_RUN_NUMBER = None
 INITIAL_MODEL_VERSION = None
@@ -13,7 +11,7 @@ INITIAL_MODEL_PATH = "" # ""/run/models/simple_model_v1"
 EPISODES = 30
 MCTS_SIMS = 100
 MEMORY_SIZE = 30000
-TURNS_UNTIL_TAU0 = 10  # turn on which it starts playing deterministically
+TURNS_UNTIL_TAU0 = 10  # turn when the agent starts playing with less noise (less exploration)
 CPUCT = 1.41
 
 """
@@ -42,4 +40,4 @@ SCORING_THRESHOLD = 1.3
 """
 
 run_folder = './run/'
-run_archive_folder = './run_archive/'
+run_archive_folder = './run/archive/'

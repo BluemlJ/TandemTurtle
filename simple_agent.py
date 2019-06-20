@@ -69,7 +69,7 @@ class Simple_Agent():
     # act - run simulations updating the MC-search-tree. Then pick an action.
     # param:
     # state - the game state
-    # tau - 1 (in the beginning, when the moves are not yet deterministic)
+    # higher_noise: 1 (in the beginning, when the moves are not yet deterministic)
     #       or 0 (after some time, when the simple_agent starts playing deterministically.
     # returns:
     # action - the chosen action,
@@ -78,7 +78,7 @@ class Simple_Agent():
     # nn_value - zero in this simple case
     # .
 
-    def act(self, state, tau):
+    def act(self, state, higher_noise):
         # go to mcts node that corresponds to state or build new mcts.
         if self.mcts is None or state.id not in self.mcts.tree:
             self.build_mcts(state)
@@ -96,7 +96,7 @@ class Simple_Agent():
         pi, values = self.get_action_values(1)
 
         # pick the action where pi is max.
-        action, value = self.choose_action(pi, values, tau)
+        action, value = self.choose_action(pi, values, higher_noise)
 
         nextState, _, _ = state.take_action(action)  # only needed for nn_value
         # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
@@ -206,15 +206,15 @@ class Simple_Agent():
 
     ####
     # choose_action: pick the action where pi is max.
-    # param: pi, values (map actions to their values), tau
+    # param: pi, values (map actions to their values), higher_noise (in the first few rounds the noise is higher)
     # return: action and its corresponding value
     ####
 
-    def choose_action(self, pi, values, tau):
+    def choose_action(self, pi, values, higher_noise):
         inverse = [(value, key) for key, value in pi.items()]
         pi_values = [value for value, key in inverse]
 
-        if tau == 0:    # deterministic
+        if higher_noise == 0:
             action_idx = [i for i, x in enumerate(pi_values) if x == max(pi_values)]
             actions = [inverse[idx][1] for idx in action_idx]
             action = random.choice(actions)
