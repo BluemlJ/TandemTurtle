@@ -11,6 +11,10 @@ import numpy as np
 from pretraining.nn import NeuralNetwork
 from util.xboardInterface import XBoardInterface
 from keras.models import load_model
+from keras.utils import plot_model
+import pickle
+from config import run_folder, run_archive_folder
+from util.memory import Memory
 
 intro_message =\
 """
@@ -71,22 +75,41 @@ def main():
     SERVER_IS_RUNNING = response == 0
 
     # if selfplay
-    local_training_mode = 0
+    local_training_mode = 1
     model = load_nn(config.INITIAL_MODEL_PATH)
 
     # If we want to learn instead of playing
     if local_training_mode:
 
-        # If loading an existing neural network, copy the config file to root
         if config.INITIAL_RUN_NUMBER != None:
-            copyfile(config.run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + '/config.py',
-                     './config.py')
+            copyfile(
+                config.run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(4) + '/config.py',
+                './config.py')
 
-        # next step is to load memory (TODO fill this step)
-        # LOAD NN (TODO fill this step)
-        model = load_nn(config.INITIAL_MODEL_PATH)
+            # next step is to load memory
+        if config.INITIAL_MEMORY_VERSION == None:
+            memory = Memory(config.MEMORY_SIZE)
+        else:
+            print('LOADING MEMORY VERSION ' + str(config.INITIAL_MEMORY_VERSION) + '...')
+            memory = pickle.load(open(run_archive_folder + env.name + '/run' + str(config.INITIAL_RUN_NUMBER).zfill(
+                4) + "/memory/memory" + str(config.INITIAL_MEMORY_VERSION).zfill(4) + ".p", "rb"))
+
+            # LOAD NN (TODO fill this step)
+        best_model = load_nn(config.INITIAL_MODEL_PATH)
+        new_model = load_nn(config.INITIAL_MODEL_PATH)
+
         # copy the config file to the run folder
+        copyfile('./config.py', run_folder + 'config.py')
+
+        # if you want to plot our nn model
+        plot_model(model, to_file=run_folder + 'models/model.png', show_shapes=True)
+
         # create players (TODO fill this step)
+        best_player1 = Simple_Agent("best_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
+        best_player2 = Simple_Agent("best_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
+        new_player1 = Simple_Agent("new_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
+        new_player2 = Simple_Agent("new_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
+
         # self-play (TODO fill this step)
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####

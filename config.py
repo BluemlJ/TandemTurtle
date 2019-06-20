@@ -40,3 +40,4 @@ SCORING_THRESHOLD = 1.3
 """
 
 run_folder = './run/'
+run_archive_folder = './run/archive/'
