@@ -86,7 +86,7 @@ while 1:
     print('BEST PLAYER VERSION ' + str(best_player_version))
 
     ######## SELF PLAY ########
-    _, memory, _, _=playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
+    _, memory, _, _=playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_WITH_HIGH_NOISE, memory = memory)
 
     memory.clear_stmemory()
 
