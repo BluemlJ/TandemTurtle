@@ -103,7 +103,7 @@ class Simple_Agent():
         nextState, _, _ = state.take_action(action)  # only needed for nn_value
         # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
         # TODO implement NN value!! only temporary
-        NN_value = 0.0
+        NN_value = self.get_preds(nextState)[0]
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
@@ -123,9 +123,12 @@ class Simple_Agent():
         x2 = input_representation.board_to_planes(partner_board)
         x2 = np.expand_dims(x2, axis=0)
 
-        inputToModel = [x1, x2]
+        input_to_model = {"input_1": x1,
+                        "input_2": x2}
 
-        predictions = self.model.predict(inputToModel)
+        print(input_to_model)
+
+        predictions = self.model.predict(input_to_model)
         # value head should be one value to say how good my state is
         value_head = predictions[0]
         # policy head gives a 2272 big vector with prob for each state
