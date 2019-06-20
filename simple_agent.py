@@ -121,11 +121,9 @@ class Simple_Agent():
         x2 = input_representation.board_to_planes(partner_board)
         x2 = np.expand_dims(x2, axis=0)
 
-        input_to_model = {"input_1": x1,
-                          "input_2": x2}
-        actualInput = {"inputs": np.concatenate((x1, x2))}
+        input_to_model = [x1, x2]
 
-        predictions = self.model.predict(actualInput)
+        predictions = self.model.predict(input_to_model)
         print("predicted")
         # value head should be one value to say how good my state is
         value_head = predictions[0]
@@ -135,8 +133,13 @@ class Simple_Agent():
         print(value_head)
         print(policy_head)
 
-        allowedActions = [output_representation.move_to_policy(move, is_white_to_move=board.turn)for move in state.allowedActions]
+        allowedActions = [output_representation.move_to_policy
+                          (move, is_white_to_move=board.turn) for move in state.allowedActions]
 
+        print(np.array(allowedActions).shape)
+        # shape 20, 2272
+        print("po shape :", policy_head.shape)
+        exit()
         mask = np.ones(policy_head.shape, dtype=bool)
         mask[allowedActions] = False
         policy_head[mask] = -100

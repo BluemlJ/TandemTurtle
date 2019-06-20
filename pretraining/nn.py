@@ -69,7 +69,8 @@ class NeuralNetwork:
 
     def create_network(self):
         # create input
-        main_input = Input(shape=self.in_dim, name="inputs")
+        main_input = Input(shape=self.in_dim, name="input_1")
+        side_board_input = Input(shape=self.in_dim, name="input_2")
 
         # apply convolutional layer
         x = self.convolutional_layer(main_input)
@@ -83,7 +84,7 @@ class NeuralNetwork:
         x = self.value_head(x)
 
         # create model
-        self.model = Model(inputs=[main_input], outputs=[x, y])
+        self.model = Model(inputs=[main_input, side_board_input], outputs=[x, y])
 
     @staticmethod
     def convolutional_layer(x):
