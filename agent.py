@@ -10,7 +10,7 @@ from game import input_representation, output_representation
 from util import logger as lg
 
 
-class Simple_Agent():
+class Agent():
     ##########
     # param:
     # name - agent name
