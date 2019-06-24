@@ -103,7 +103,7 @@ class Agent():
         lg.logger_mcts.info('EDGE_VISITED_RATE...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', next_state_evaluation)
-        return (action, edge_visited_rates, best_average_evaluation, next_state_evaluation)
+        return action, edge_visited_rates, best_average_evaluation, next_state_evaluation
 
     def get_preds(self, state):
         # predict the leaf

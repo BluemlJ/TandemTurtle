@@ -1,45 +1,9 @@
-import numpy as np
-import random
 from time import sleep
 import chess
-
-# import logger as lg
-
 from game.game import Game, GameState
 
-"""
-def playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0,
-                               goes_first=0):
-    if player1version == -1:
-        player1 = User('player1', env.state_size, env.action_size)
-    else:
-        player1_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape, env.action_size,
-                                  config.HIDDEN_CNN_LAYERS)
 
-        if player1version > 0:
-            player1_network = player1_NN.read(env.name, run_version, player1version)
-            player1_NN.model.set_weights(player1_network.get_weights())
-        player1 = Agent('player1', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, player1_NN)
-
-    if player2version == -1:
-        player2 = User('player2', env.state_size, env.action_size)
-    else:
-        player2_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape, env.action_size,
-                                  config.HIDDEN_CNN_LAYERS)
-
-        if player2version > 0:
-            player2_network = player2_NN.read(env.name, run_version, player2version)
-            player2_NN.model.set_weights(player2_network.get_weights())
-        player2 = Agent('player2', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, player2_NN)
-
-    scores, memory, points, sp_scores = playMatches(player1, player2, EPISODES, logger, turns_until_tau0, None,
-                                                    goes_first)
-
-    return (scores, memory, points, sp_scores)
-"""
-
-
-def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first):
+def play_websocket_game(player, logger, interface, turns_with_high_noise, goes_first):
     while interface.color is None:
         sleep(0.01)
     env = Game(0)
@@ -68,10 +32,10 @@ def play_websocket_game(player, logger, interface, turns_until_tau0, goes_first)
         interface.logViaInterfaceType(f"[{player.name}] It's my turn!")
 
         turn += 1
-        tauNotReached = 1 if turn < turns_until_tau0 else 0
+        higher_noise = 1 if turn < turns_with_high_noise else 0
 
-        # get action
-        action, pi, MCTS_value, NN_value = player.act(state, tauNotReached)
+        # get action, edge_visited_rates, best_average_evaluation, next_state_evaluation
+        action, _, _, _ = player.act(state, higher_noise)
 
         # send message
         logger.info(f"move {action} was played by {player.name}")

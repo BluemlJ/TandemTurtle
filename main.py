@@ -59,7 +59,7 @@ def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"
     while not interface.gameStarted:
         sleep(0.1)
 
-    funcs.play_websocket_game(agent1, lg.logger_main, interface, turns_until_tau0=config.TURNS_WITH_HIGH_NOISE, goes_first=isStarting)
+    funcs.play_websocket_game(agent1, lg.logger_main, interface, turns_with_high_noise=config.TURNS_WITH_HIGH_NOISE, goes_first=isStarting)
 
 
 def main():
