@@ -15,6 +15,7 @@ from keras.utils import plot_model
 import pickle
 from config import run_folder, run_archive_folder
 from util.memory import Memory
+import tensorflow as tf
 
 intro_message =\
 """
@@ -63,8 +64,7 @@ def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"
 
 
 def main():
-    import tensorflow as tf
-    graph = tf.Graph()
+    # graph = tf.Graph()
 
     print(intro_message)
     np.set_printoptions(suppress=True)
@@ -78,19 +78,14 @@ def main():
 
     # if selfplay
     local_training_mode = 0
-    with graph.as_default():
-        model = load_nn(config.INITIAL_MODEL_PATH)
-        model._make_predict_function()
+    # with graph.as_default():
+    model = load_nn(config.INITIAL_MODEL_PATH)
+    model._make_predict_function()
 
     print(model.summary())
-    for layer in model.layers:
-        print(layer.input_shape)
-    print("Input: ")
-    print(model.layers[0].input_shape)
 
-
-
-    writer = tf.summary.FileWriter(logdir='logdir', graph=graph)
+    writer = tf.summary.FileWriter(logdir='logdir',
+                                   graph=tf.get_default_graph())
     writer.flush()
 
     # If we want to learn instead of playing

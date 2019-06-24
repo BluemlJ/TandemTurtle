@@ -5,9 +5,10 @@ on the magnificent Bughouse chess game
 import numpy as np
 # from keras.optimizers import adam  # , SGD
 from keras import regularizers
-from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
+from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
 from keras.models import Model
 from math import ceil
+import tensorflow as tf
 from tensorflow.python.keras.callbacks import TensorBoard
 import time
 # import config_training as cf
@@ -59,9 +60,9 @@ class NeuralNetwork:
             print("\n\n\n --------------------------------------- \n")
             print("RUNNING IN TEST MODE")
             print("\n --------------------------------------- \n\n\n")
-            self.n_train = 1000
-            self.n_val = 10
-            self.n_test = 10
+            self.n_train = 1
+            self.n_val = 1
+            self.n_test = 1
         else:
             self.n_train = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.train") / cf.BATCH_SIZE)
             self.n_val = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.validation") / cf.BATCH_SIZE)
@@ -69,22 +70,35 @@ class NeuralNetwork:
 
     def create_network(self):
         # create input
-        main_input = Input(shape=self.in_dim, name="input_1")
-        side_board_input = Input(shape=self.in_dim, name="input_2")
+        board_input = Input(shape=self.in_dim)
 
         # apply convolutional layer
-        x = self.convolutional_layer(main_input)
+        with tf.name_scope(f"conv_input"):
+            x = self.convolutional_layer(board_input)
 
         # apply residual layers
         for i in range(cf.NR_RESIDUAL_LAYERS):
-            x = self.residual_layer(x)
+            with tf.name_scope(f"res_{i}"):
+                x = self.residual_layer(x)
+
+        board_model = Model(inputs=board_input, outputs=x, name="board_model")
+
+        main_input = Input(shape=self.in_dim, name="input_1")
+        side_board_input = Input(shape=self.in_dim, name="input_2")
+
+        out_main = board_model(main_input)
+        out_side_board = board_model(side_board_input)
+
+        with tf.name_scope(f"concatination"):
+            concatenated = concatenate([out_main, out_side_board])
 
         # apply policy head and value head
-        y = self.policy_head(x)
-        x = self.value_head(x)
+        y = self.policy_head(concatenated)
+        x = self.value_head(concatenated)
 
+        self.model = Model(inputs=[main_input, side_board_input],
+                           outputs=[x, y])
         # create model
-        self.model = Model(inputs=[main_input, side_board_input], outputs=[x, y])
 
     @staticmethod
     def convolutional_layer(x):
@@ -121,56 +135,69 @@ class NeuralNetwork:
         return x
 
     def value_head(self, x):
-        x = Conv2D(
-            filters=cf.NR_CONV_FILTERS_VALUE_HEAD,
-            kernel_size=(1, 1),
-            data_format="channels_first",
-            padding='same',
-            use_bias=False,
-            activation='linear',
-            kernel_regularizer=regularizers.l2(cf.REG_CONST)
-        )(x)
+        with tf.name_scope("value_head"):
+            x = Conv2D(
+                filters=cf.NR_CONV_FILTERS_VALUE_HEAD,
+                kernel_size=(1, 1),
+                data_format="channels_first",
+                padding='same',
+                use_bias=False,
+                activation='linear',
+                kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            )(x)
 
-        x = BatchNormalization(axis=1)(x)
-        x = LeakyReLU()(x)
+            x = BatchNormalization(axis=1)(x)
+            x = LeakyReLU()(x)
 
-        # flatten x in order to put it into the dense NN
-        x = Flatten()(x)
+            # flatten x in order to put it into the dense NN
+            x = Flatten()(x)
 
-        # first fully connected layer
-        x = Dense(
-            cf.SIZE_VALUE_HEAD_HIDDEN,
-            use_bias=False,
-            activation='linear',
-            kernel_regularizer=regularizers.l2(cf.REG_CONST)
-        )(x)
+            # first fully connected layer
+            x = Dense(
+                cf.SIZE_VALUE_HEAD_HIDDEN,
+                use_bias=False,
+                activation='linear',
+                kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            )(x)
 
-        x = LeakyReLU()(x)
+            x = LeakyReLU()(x)
 
-        # second fully connected layer
-        x = Dense(
-            self.out_dim_value_head,
-            use_bias=False,
-            activation='tanh',
-            kernel_regularizer=regularizers.l2(cf.REG_CONST),
-            name='value_head',
-        )(x)
+            # second fully connected layer
+            x = Dense(
+                self.out_dim_value_head,
+                use_bias=False,
+                activation='tanh',
+                kernel_regularizer=regularizers.l2(cf.REG_CONST),
+                name='value_head',
+            )(x)
 
         return x
 
     def policy_head(self, x):
-        x = Conv2D(
-            filters=cf.NR_CONV_FILTERS_POLICY_HEAD, kernel_size=(1, 1), data_format="channels_first", padding='same', use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(cf.REG_CONST)
-        )(x)
+        with tf.name_scope("policy_head"):
+            x = Conv2D(
+                filters=cf.NR_CONV_FILTERS_POLICY_HEAD,
+                kernel_size=(1, 1),
+                data_format="channels_first",
+                padding='same',
+                use_bias=False,
+                activation='linear',
+                kernel_regularizer=regularizers.l2(cf.REG_CONST)
+            )(x)
 
-        x = BatchNormalization(axis=1)(x)
-        x = LeakyReLU()(x)
+            x = BatchNormalization(axis=1)(x)
+            x = LeakyReLU()(x)
 
-        x = Flatten()(x)
+            x = Flatten()(x)
 
-        # check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before (I removed the to do because I think it does make sense.
-        x = Dense(
-            self.out_dim_policy_head, use_bias=False, activation='softmax', kernel_regularizer=regularizers.l2(cf.REG_CONST), name='policy_head'
-        )(x)
+            # check if softmax makes sense here (it should since we use cross entropy) Was "linaer" before (I removed the to do because I think it does make sense.
+            # TODO
+            x = Dense(
+                self.out_dim_policy_head,
+                use_bias=False,
+                activation='linear',
+                kernel_regularizer=regularizers.l2(cf.REG_CONST),
+                name='policy_head'
+            )(x)
 
         return x
