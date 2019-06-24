@@ -37,7 +37,7 @@ class Agent():
 
         self.interface = interface
 
-        # to plot value and policy loss later
+        # to plot value_head and policy_head loss later
         self.train_overall_loss = []
         self.train_value_loss = []
         self.train_policy_loss = []
@@ -181,10 +181,10 @@ class Agent():
 
         for action, edge in edges:
             # Todo will only take first argmax, but several ones in actions
-            edge_visited_rate = edge.stats['N']
+            edge_visited_rate = edge.stats['node_visits']
             rates_total += edge_visited_rate
             edge_visited_rates[action] = edge_visited_rate
-            win_rates[action] = edge.stats['Q']
+            win_rates[action] = edge.stats['node_win_rate']
 
         # prevent division by zero error. In case there are no edges visited the actions/edges can be chosen arbitrarily.
         if rates_total == 0:

@@ -40,7 +40,7 @@ class Edge:
     def __init__(self, inNode, outNode, prior, action):
         """
         ...
-        :param inNode:
+        :param inNode: The node
         :param outNode:
         :param prior:
         :param action: chessMove
@@ -52,9 +52,9 @@ class Edge:
         self.action = action
 
         self.stats = {
-            'N': 0,
-            'W': 0,
-            'Q': 0,
+            'node_visits': 0,
+            'node_wins': 0,
+            'node_win_rate': 0,
             # 'P': prior, not needed yet (only for NN Approach, for simple approach P = 1
             'P': 1,
         }
@@ -88,26 +88,25 @@ class MCTS:
 
             Nb = 0
             for action, edge in currentNode.edges:
-                Nb = Nb + edge.stats['N']
+                Nb = Nb + edge.stats['node_visits']
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
                 U = self.cpuct * \
                     edge.stats['P'] * \
-                    np.sqrt(Nb / (1 + edge.stats['N']))
-
-                Q = edge.stats['Q']
+                    np.sqrt(Nb / (1 + edge.stats['node_visits']))
+                Q = edge.stats['node_win_rate']
 
                 lg.logger_mcts.info(
-                    'action: %s ... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f',
+                    'action: %s ... node_visits = %d, P = %f, adjP = %f, wins = %f, win_rate = %f, U = %f, Q+U = %f',
                     action,
-                    edge.stats['N'],
+                    edge.stats['node_visits'],
                     np.round(
                         edge.stats['P'],
                         6),
                     (edge.stats['P']),
                     np.round(
-                        edge.stats['W'],
+                        edge.stats['node_wins'],
                         6),
                     np.round(
                         Q,
@@ -147,11 +146,11 @@ class MCTS:
             else:
                 direction = -1
 
-            edge.stats['N'] = edge.stats['N'] + 1
-            edge.stats['W'] = edge.stats['W'] + value * direction
-            edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
+            edge.stats['node_visits'] = edge.stats['node_visits'] + 1
+            edge.stats['node_wins'] = edge.stats['node_wins'] + value * direction
+            edge.stats['node_win_rate'] = edge.stats['node_wins'] / edge.stats['node_visits']
 
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['N'], edge.stats['W'], edge.stats['Q']
+            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_wins'], edge.stats['node_win_rate']
                                 )
 
             # edge.outNode.state.render(lg.logger_mcts)
