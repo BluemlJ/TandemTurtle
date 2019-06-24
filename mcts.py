@@ -52,8 +52,7 @@ class Edge:
             'node_visits': 0,
             'node_total_evaluation': 0,
             'node_average_evaluation': 0,
-            # 'P': prior, not needed yet (only for NN Approach, for simple approach P = 1
-            'P': 1,
+            'action_probability': prior,
         }
 
 
@@ -83,22 +82,21 @@ class MCTS:
 
             maxQU = -99999
 
-            Nb = 0
+            parent_visits = 0
             for action, edge in currentNode.edges:
-                Nb = Nb + edge.stats['node_visits']
+                parent_visits = parent_visits + edge.stats['node_visits']
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
                 # UCT = Q+U
-                U = self.cpuct * \
-                    edge.stats['P'] * \
-                    np.sqrt(Nb / (1 + edge.stats['node_visits']))
+                U = self.cpuct * edge.stats['action_probability'] * \
+                    np.sqrt(parent_visits / (1 + edge.stats['node_visits']))
                 Q = edge.stats['node_average_evaluation']
 
                 lg.logger_mcts.info(
                     'action: %s ... node_visits = %d, P = %f, adjP = %f, wins = %f, win_rate = %f, U = %f, Q+U = %f',
                     action,
-                    edge.stats['node_visits'], np.round(edge.stats['P'], 6), edge.stats['P'],
+                    edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6), edge.stats['action_probability'],
                     np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
                 if Q + U > maxQU:
