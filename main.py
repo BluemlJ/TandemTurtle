@@ -63,6 +63,9 @@ def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"
 
 
 def main():
+    import tensorflow as tf
+    graph = tf.Graph()
+
     print(intro_message)
     np.set_printoptions(suppress=True)
 
@@ -75,9 +78,20 @@ def main():
 
     # if selfplay
     local_training_mode = 0
+    with graph.as_default():
+        model = load_nn(config.INITIAL_MODEL_PATH)
+        model._make_predict_function()
 
-    model = load_nn(config.INITIAL_MODEL_PATH)
-    model._make_predict_function()
+    print(model.summary())
+    for layer in model.layers:
+        print(layer.input_shape)
+    print("Input: ")
+    print(model.layers[0].input_shape)
+
+
+
+    writer = tf.summary.FileWriter(logdir='logdir', graph=graph)
+    writer.flush()
 
     # If we want to learn instead of playing
     if local_training_mode:
