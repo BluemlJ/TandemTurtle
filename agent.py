@@ -92,11 +92,10 @@ class Agent():
             lg.logger_mcts.info('***************************')
             self.simulate()  # updates MCTS
 
-        # get action values. edge_visited_rates are, how frequently an edge/action is visited
-        edge_visited_rates, win_rates = self.get_statistics_of_root_edges()
+        edge_visited_rates, node_average_evaluations = self.get_statistics_of_root_edges()
 
         # pick the action where visited_rate is max.
-        action, win_rate = self.choose_action(edge_visited_rates, win_rates, higher_noise)
+        action, best_average_evaluation = self.choose_action(edge_visited_rates, node_average_evaluations, higher_noise)
 
         next_state, _, _ = state.take_action(action)
         next_state_evaluation = self.get_preds(next_state)[0]
@@ -104,7 +103,7 @@ class Agent():
         lg.logger_mcts.info('EDGE_VISITED_RATE...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', next_state_evaluation)
-        return (action, edge_visited_rates, win_rate, next_state_evaluation)
+        return action, edge_visited_rates, best_average_evaluation, next_state_evaluation
 
     def get_preds(self, state):
         # predict the leaf
@@ -147,7 +146,7 @@ class Agent():
         if done == 0:  # game is still in process
 
             value_head, move_probabilities, allowed_action_idxs, allowed_actions = self.get_preds(leaf.state)
-            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value_head)
+            lg.logger_mcts.info('PREDICTED VALUE_HEAD FOR %d: %f', leaf.state.playerTurn, value_head)
 
             # limit to allowed actions
             move_probabilities = move_probabilities[allowed_action_idxs]
@@ -169,7 +168,7 @@ class Agent():
         else:  # after game is done (done ==1). in this case, do not use Neural Network,
             # but use the result of the game directly as leaf evaluation.
             value_head = result
-            lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, result)
+            lg.logger_mcts.info('GAME RESULT FOR %d: %f', leaf.playerTurn, result)
 
         return value_head  # here was "result" before, this was probably a mistake..
 
@@ -204,7 +203,7 @@ class Agent():
     # return: action and its corresponding value
     ####
 
-    def choose_action(self, edges_visited_rates, win_rates, higher_noise):
+    def choose_action(self, edges_visited_rates, node_average_evaluations, higher_noise):
         # invert dictionary - swap key and value. Now visited rate is in front, action is second
         # [(action1, visited_rate1),...] -> [(visited_rate1, action1), ...]
         # TODO remove square brackets for performance
@@ -220,10 +219,10 @@ class Agent():
             value_idx = np.where(value_idx_arr == 1)[0][0]
             action = inverse[value_idx][1]
 
-        win_rate = win_rates[action]
+        node_average_evaluation = node_average_evaluations[action]
 
         # return action
-        return action, win_rate
+        return action, node_average_evaluation
 
     # TODO reimplement replay and predict
 
