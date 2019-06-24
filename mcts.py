@@ -33,9 +33,6 @@ class Node:
 
 
 class Edge:
-    """
-    ...
-    """
 
     def __init__(self, inNode, outNode, prior, action):
         """
@@ -53,8 +50,8 @@ class Edge:
 
         self.stats = {
             'node_visits': 0,
-            'node_wins': 0,
-            'node_win_rate': 0,
+            'node_total_evaluation': 0,
+            'node_average_evaluation': 0,
             # 'P': prior, not needed yet (only for NN Approach, for simple approach P = 1
             'P': 1,
         }
@@ -92,31 +89,17 @@ class MCTS:
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
+                # UCT = Q+U
                 U = self.cpuct * \
                     edge.stats['P'] * \
                     np.sqrt(Nb / (1 + edge.stats['node_visits']))
-                Q = edge.stats['node_win_rate']
+                Q = edge.stats['node_average_evaluation']
 
                 lg.logger_mcts.info(
                     'action: %s ... node_visits = %d, P = %f, adjP = %f, wins = %f, win_rate = %f, U = %f, Q+U = %f',
                     action,
-                    edge.stats['node_visits'],
-                    np.round(
-                        edge.stats['P'],
-                        6),
-                    (edge.stats['P']),
-                    np.round(
-                        edge.stats['node_wins'],
-                        6),
-                    np.round(
-                        Q,
-                        6),
-                    np.round(
-                        U,
-                        6),
-                    np.round(
-                        Q + U,
-                        6))
+                    edge.stats['node_visits'], np.round(edge.stats['P'], 6), edge.stats['P'],
+                    np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
@@ -130,7 +113,7 @@ class MCTS:
             currentNode = simulationEdge.outNode
             breadcrumbs.append(simulationEdge)
 
-        lg.logger_mcts.info('DONE...%d', done)
+        lg.logger_mcts.info('DONE/Endgame...%d', done)
 
         return currentNode, value, done, breadcrumbs
 
@@ -147,10 +130,10 @@ class MCTS:
                 direction = -1
 
             edge.stats['node_visits'] = edge.stats['node_visits'] + 1
-            edge.stats['node_wins'] = edge.stats['node_wins'] + value * direction
-            edge.stats['node_win_rate'] = edge.stats['node_wins'] / edge.stats['node_visits']
+            edge.stats['node_total_evaluation'] = edge.stats['node_total_evaluation'] + value * direction
+            edge.stats['node_average_evaluation'] = edge.stats['node_total_evaluation'] / edge.stats['node_visits']
 
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_wins'], edge.stats['node_win_rate']
+            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_total_evaluation'], edge.stats['node_average_evaluation']
                                 )
 
             # edge.outNode.state.render(lg.logger_mcts)

@@ -56,6 +56,7 @@ class Agent():
 
         # MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
+        # start logger.
         leaf.state.render(lg.logger_mcts)
 
         # EVALUATE THE LEAF NODE
@@ -184,7 +185,7 @@ class Agent():
             edge_visited_rate = edge.stats['node_visits']
             rates_total += edge_visited_rate
             edge_visited_rates[action] = edge_visited_rate
-            win_rates[action] = edge.stats['node_win_rate']
+            win_rates[action] = edge.stats['node_average_evaluation']
 
         # prevent division by zero error. In case there are no edges visited the actions/edges can be chosen arbitrarily.
         if rates_total == 0:
