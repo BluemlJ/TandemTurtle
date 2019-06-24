@@ -54,16 +54,16 @@ class Agent():
         self.mcts.root.state.render(lg.logger_mcts)  # log game state
         lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
 
-        # MOVE THE LEAF NODE
-        leaf, value, done, breadcrumbs = self.mcts.move_to_leaf()
+        # MOVE TO THE LEAF NODE
+        leaf, result, done, breadcrumbs = self.mcts.move_to_leaf()
         # start logger.
         leaf.state.render(lg.logger_mcts)
 
         # EVALUATE THE LEAF NODE
-        value, breadcrumbs = self.evaluate_leaf(leaf, value, done, breadcrumbs)
+        leaf_evaluation = self.expand_and_evaluate_leaf(leaf, result, done)
 
-        # BACKFILL THE VALUE THROUGH THE TREE
-        self.mcts.back_fill(leaf, value, breadcrumbs)
+        # BACKFILL THE EVALUATION THROUGH THE TREE
+        self.mcts.back_fill(leaf, leaf_evaluation, breadcrumbs)
 
     ####
     # act - run simulations updating the MC-search-tree. Then pick an action.
@@ -74,7 +74,7 @@ class Agent():
     # returns:
     # action - the chosen action,
     # edge_visited_rates - how often (relatively) the actions/edges were visited by mcts
-    # value - (?)
+    #
     # nn_value - zero in this simple case
     # .
 
@@ -93,20 +93,18 @@ class Agent():
             self.simulate()  # updates MCTS
 
         # get action values. edge_visited_rates are, how frequently an edge/action is visited
-        edge_visited_rates, win_rates = self.get_action_values()
+        edge_visited_rates, win_rates = self.get_statistics_of_root_edges()
 
         # pick the action where visited_rate is max.
         action, win_rate = self.choose_action(edge_visited_rates, win_rates, higher_noise)
 
-        nextState, _, _ = state.take_action(action)  # only needed for nn_value
-        # ---> TODO implement get preds = NN_value = -self.get_preds(nextState)[0]
-        # TODO implement NN value!! only temporary
-        NN_value = self.get_preds(nextState)[0]
+        next_state, _, _ = state.take_action(action)
+        next_state_evaluation = self.get_preds(next_state)[0]
 
         lg.logger_mcts.info('EDGE_VISITED_RATE...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
-        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
-        return (action, edge_visited_rates, win_rate, NN_value)
+        lg.logger_mcts.info('NN PERCEIVED VALUE...%f', next_state_evaluation)
+        return (action, edge_visited_rates, win_rate, next_state_evaluation)
 
     def get_preds(self, state):
         # predict the leaf
@@ -134,50 +132,52 @@ class Agent():
         policy_head[mask] = -100
 
         odds = np.exp(policy_head)
-        probs = odds / np.sum(odds)
+        move_probabilities = odds / np.sum(odds)
 
         allowed_actions = [output_representation.policy_idx_to_move
                            (idx, is_white_to_move=board.turn, board_id=board.board_id) for idx in allowed_action_idxs]
 
-        return value_head, probs, allowed_action_idxs, allowed_actions
+        return value_head, move_probabilities, allowed_action_idxs, allowed_actions
 
     ####
-    # evaluate_leaf: .
-    def evaluate_leaf(self, leaf, eval_value, done, breadcrumbs):  # TODO (later): delete breadcrumbs, its not used, is it?
+    #
+    def expand_and_evaluate_leaf(self, leaf, result, done):
 
         lg.logger_mcts.info('------EVALUATING LEAF------')
-        if done == 0:
+        if done == 0:  # game is still in process
 
-            value, probs, allowed_action_idxs, allowed_actions = self.get_preds(leaf.state)
-            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
+            value_head, move_probabilities, allowed_action_idxs, allowed_actions = self.get_preds(leaf.state)
+            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value_head)
 
-            probs = probs[allowed_action_idxs]
+            # limit to allowed actions
+            move_probabilities = move_probabilities[allowed_action_idxs]
 
-            # ---- TODO delete above and use get_preds
-
+            # expand tree (for all allowed actions)
             for idx, action in enumerate(allowed_actions):
-                newState, _, _ = leaf.state.take_action(action)
-                if newState.id not in self.mcts.tree:
-                    node = mc.Node(newState)
+                new_state, _, _ = leaf.state.take_action(action)
+                if new_state.id not in self.mcts.tree:
+                    node = mc.Node(new_state)
                     self.mcts.add_node(node)
-                    lg.logger_mcts.info('added node...%s...p = %f', node.id, probs[idx])
+                    lg.logger_mcts.info('added node...%s...p = %f', node.id, move_probabilities[idx])
                 else:
-                    node = self.mcts.tree[newState.id]
+                    node = self.mcts.tree[new_state.id]
                     lg.logger_mcts.info('existing node...%s...', node.id)
 
-                newEdge = mc.Edge(leaf, node, probs[idx], action)
-                leaf.edges.append((action, newEdge))
+                new_edge = mc.Edge(leaf, node, move_probabilities[idx], action)
+                leaf.edges.append((action, new_edge))
 
-        else:  # after evaluation is done (done ==1)
-            lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, eval_value)
+        else:  # after game is done (done ==1). in this case, do not use Neural Network,
+            # but use the result of the game directly as leaf evaluation.
+            value_head = result
+            lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, result)
 
-        return (eval_value, breadcrumbs)
+        return value_head  # here was "result" before, this was probably a mistake..
 
-    def get_action_values(self):
+    def get_statistics_of_root_edges(self):
 
         edges = self.mcts.root.edges
         edge_visited_rates = {}
-        win_rates = {}
+        node_average_evaluations = {}
         rates_total = 0
 
         for action, edge in edges:
@@ -185,7 +185,7 @@ class Agent():
             edge_visited_rate = edge.stats['node_visits']
             rates_total += edge_visited_rate
             edge_visited_rates[action] = edge_visited_rate
-            win_rates[action] = edge.stats['node_average_evaluation']
+            node_average_evaluations[action] = edge.stats['node_average_evaluation']
 
         # prevent division by zero error. In case there are no edges visited the actions/edges can be chosen arbitrarily.
         if rates_total == 0:
@@ -195,7 +195,7 @@ class Agent():
             # normalize edge_visited_rate to sum up to 1 (probability distribution)
             edge_visited_rates[key] = value / (rates_total * 1.0)
 
-        return edge_visited_rates, win_rates
+        return edge_visited_rates, node_average_evaluations
 
     ####
     # choose_action: pick the action where the visited rate is max. In the first few rounds:

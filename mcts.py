@@ -74,7 +74,7 @@ class MCTS:
         currentNode = self.root
 
         done = 0
-        value = 0
+        result = 0
 
         while not currentNode.isLeaf():
 
@@ -94,28 +94,29 @@ class MCTS:
                 Q = edge.stats['node_average_evaluation']
 
                 lg.logger_mcts.info(
-                    'action: %s ... node_visits = %d, P = %f, adjP = %f, wins = %f, win_rate = %f, U = %f, Q+U = %f',
+                    'action: %s ... node_visits = %d, action_probability = %f, node_total_evaluation = %f, node_average_evaluation = %f, U = %f, Q+U = %f',
                     action,
-                    edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6), edge.stats['action_probability'],
+                    edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6),
                     np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
-                    simulationAction = action
-                    simulationEdge = edge
+                    action_maxQU = action
+                    edge_maxQU = edge
 
-            lg.logger_mcts.info('action with highest Q + U...%s', simulationAction)
+            lg.logger_mcts.info('action with highest Q + U...%s', action_maxQU)
 
-            newState, value, done = currentNode.state.take_action(simulationAction)
-            # the value of the newState from the POV of the new playerTurn
-            currentNode = simulationEdge.outNode
-            breadcrumbs.append(simulationEdge)
+            new_state, result, done = currentNode.state.take_action(action_maxQU)
+            # whether the game is done and the result from the point of view of the new playerTurn
+            # result is 0 if the game is not yet finished.
+            currentNode = edge_maxQU.outNode
+            breadcrumbs.append(edge_maxQU)
 
         lg.logger_mcts.info('DONE/Endgame...%d', done)
 
-        return currentNode, value, done, breadcrumbs
+        return currentNode, result, done, breadcrumbs
 
-    def back_fill(self, leaf, value, breadcrumbs):
+    def back_fill(self, leaf, leaf_evaluation, breadcrumbs):
         lg.logger_mcts.info('------DOING BACKFILL------')
 
         currentPlayer = leaf.state.playerTurn
@@ -128,10 +129,10 @@ class MCTS:
                 direction = -1
 
             edge.stats['node_visits'] = edge.stats['node_visits'] + 1
-            edge.stats['node_total_evaluation'] = edge.stats['node_total_evaluation'] + value * direction
+            edge.stats['node_total_evaluation'] = edge.stats['node_total_evaluation'] + leaf_evaluation * direction
             edge.stats['node_average_evaluation'] = edge.stats['node_total_evaluation'] / edge.stats['node_visits']
 
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_total_evaluation'], edge.stats['node_average_evaluation']
+            lg.logger_mcts.info('updating edge with leaf_evaluation %f for player %d... N = %d, W = %f, Q = %f', leaf_evaluation * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_total_evaluation'], edge.stats['node_average_evaluation']
                                 )
 
             # edge.outNode.state.render(lg.logger_mcts)
