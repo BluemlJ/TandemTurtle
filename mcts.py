@@ -33,14 +33,11 @@ class Node:
 
 
 class Edge:
-    """
-    ...
-    """
 
     def __init__(self, inNode, outNode, prior, action):
         """
         ...
-        :param inNode:
+        :param inNode: The node
         :param outNode:
         :param prior:
         :param action: chessMove
@@ -52,11 +49,10 @@ class Edge:
         self.action = action
 
         self.stats = {
-            'N': 0,
-            'W': 0,
-            'Q': 0,
-            # 'P': prior, not needed yet (only for NN Approach, for simple approach P = 1
-            'P': 1,
+            'node_visits': 0,
+            'node_total_evaluation': 0,
+            'node_average_evaluation': 0,
+            'action_probability': prior,
         }
 
 
@@ -78,7 +74,7 @@ class MCTS:
         currentNode = self.root
 
         done = 0
-        value = 0
+        result = 0
 
         while not currentNode.isLeaf():
 
@@ -86,56 +82,41 @@ class MCTS:
 
             maxQU = -99999
 
-            Nb = 0
+            parent_visits = 0
             for action, edge in currentNode.edges:
-                Nb = Nb + edge.stats['N']
+                parent_visits = parent_visits + edge.stats['node_visits']
 
             for idx, (action, edge) in enumerate(currentNode.edges):
 
-                U = self.cpuct * \
-                    edge.stats['P'] * \
-                    np.sqrt(Nb / (1 + edge.stats['N']))
-
-                Q = edge.stats['Q']
+                # UCT = Q+U
+                U = self.cpuct * edge.stats['action_probability'] * \
+                    np.sqrt(parent_visits / (1 + edge.stats['node_visits']))
+                Q = edge.stats['node_average_evaluation']
 
                 lg.logger_mcts.info(
-                    'action: %s ... N = %d, P = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f',
+                    'action: %s ... node_visits = %d, action_probability = %f, node_total_evaluation = %f, node_average_evaluation = %f, U = %f, Q+U = %f',
                     action,
-                    edge.stats['N'],
-                    np.round(
-                        edge.stats['P'],
-                        6),
-                    (edge.stats['P']),
-                    np.round(
-                        edge.stats['W'],
-                        6),
-                    np.round(
-                        Q,
-                        6),
-                    np.round(
-                        U,
-                        6),
-                    np.round(
-                        Q + U,
-                        6))
+                    edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6),
+                    np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
-                    simulationAction = action
-                    simulationEdge = edge
+                    action_maxQU = action
+                    edge_maxQU = edge
 
-            lg.logger_mcts.info('action with highest Q + U...%s', simulationAction)
+            lg.logger_mcts.info('action with highest Q + U...%s', action_maxQU)
 
-            newState, value, done = currentNode.state.take_action(simulationAction)
-            # the value of the newState from the POV of the new playerTurn
-            currentNode = simulationEdge.outNode
-            breadcrumbs.append(simulationEdge)
+            new_state, result, done = currentNode.state.take_action(action_maxQU)
+            # whether the game is done and the result from the point of view of the new playerTurn
+            # result is 0 if the game is not yet finished.
+            currentNode = edge_maxQU.outNode
+            breadcrumbs.append(edge_maxQU)
 
-        lg.logger_mcts.info('DONE...%d', done)
+        lg.logger_mcts.info('DONE/Endgame...%d', done)
 
-        return currentNode, value, done, breadcrumbs
+        return currentNode, result, done, breadcrumbs
 
-    def back_fill(self, leaf, value, breadcrumbs):
+    def back_fill(self, leaf, leaf_evaluation, breadcrumbs):
         lg.logger_mcts.info('------DOING BACKFILL------')
 
         currentPlayer = leaf.state.playerTurn
@@ -147,11 +128,11 @@ class MCTS:
             else:
                 direction = -1
 
-            edge.stats['N'] = edge.stats['N'] + 1
-            edge.stats['W'] = edge.stats['W'] + value * direction
-            edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
+            edge.stats['node_visits'] = edge.stats['node_visits'] + 1
+            edge.stats['node_total_evaluation'] = edge.stats['node_total_evaluation'] + leaf_evaluation * direction
+            edge.stats['node_average_evaluation'] = edge.stats['node_total_evaluation'] / edge.stats['node_visits']
 
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['N'], edge.stats['W'], edge.stats['Q']
+            lg.logger_mcts.info('updating edge with leaf_evaluation %f for player %d... N = %d, W = %f, Q = %f', leaf_evaluation * direction, playerTurn, edge.stats['node_visits'], edge.stats['node_total_evaluation'], edge.stats['node_average_evaluation']
                                 )
 
             # edge.outNode.state.render(lg.logger_mcts)

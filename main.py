@@ -2,7 +2,7 @@ from shutil import copyfile
 import os
 import _thread
 from time import sleep
-from simple_agent import Simple_Agent
+from agent import Agent
 import config
 from util import logger as lg
 import funcs
@@ -54,12 +54,12 @@ def load_nn(path_to_nn=""):
 def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"):
     interface = XBoardInterface(name, interfaceType)
 
-    agent1 = Simple_Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
+    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
 
     while not interface.gameStarted:
         sleep(0.1)
 
-    funcs.play_websocket_game(agent1, lg.logger_main, interface, turns_until_tau0=config.TURNS_UNTIL_TAU0, goes_first=isStarting)
+    funcs.play_websocket_game(agent1, lg.logger_main, interface, turns_until_tau0=config.TURNS_WITH_HIGH_NOISE, goes_first=isStarting)
 
 
 def main():
@@ -120,10 +120,10 @@ def main():
         plot_model(model, to_file=run_folder + 'models/model.png', show_shapes=True)
 
         # create players (TODO fill this step)
-        best_player1 = Simple_Agent("best_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
-        best_player2 = Simple_Agent("best_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
-        new_player1 = Simple_Agent("new_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
-        new_player2 = Simple_Agent("new_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
+        best_player1 = Agent("best_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
+        best_player2 = Agent("best_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_model)
+        new_player1 = Agent("new_player1", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
+        new_player2 = Agent("new_player2", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, new_model)
 
         # self-play (TODO fill this step)
 

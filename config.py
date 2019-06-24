@@ -5,13 +5,13 @@
 INITIAL_RUN_NUMBER = None
 INITIAL_MODEL_VERSION = None
 INITIAL_MEMORY_VERSION = None
-INITIAL_MODEL_PATH = "" # ""/run/models/simple_model_v1"
+INITIAL_MODEL_PATH = ""  # ""/run/models/simple_model_v1"
 
 # SELF PLAY
 EPISODES = 30
 MCTS_SIMS = 100
 MEMORY_SIZE = 30000
-TURNS_UNTIL_TAU0 = 10  # turn when the agent starts playing with less noise (less exploration)
+TURNS_WITH_HIGH_NOISE = 10  # turn when the agent starts playing with less noise (less exploration)
 CPUCT = 1.41
 
 """

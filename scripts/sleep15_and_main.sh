@@ -1,7 +1,7 @@
 # sub script for run_game.sh
 
 cd ../TandemTurtle/
-sleep 15
+sleep 7
 python3 main.py
 
 echo "Press any key to continue"

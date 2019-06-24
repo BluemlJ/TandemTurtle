@@ -1,5 +1,5 @@
  
-
+sudo chmod -R 777 ../chess
 echo "----------Updating TandemTurtle"
 cd ../
 git pull
