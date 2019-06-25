@@ -119,13 +119,10 @@ def self_play(env, max_iteration=2500):
                 s['state'].render(lg.logger_memory)
 
             print('TOURNAMENT...')
-            scores, _, points, sp_scores = playMatches(best_player, new_player, config.EVAL_EPISODES,
+            scores, _, points = playMatches(best_player, new_player, config.EVAL_EPISODES,
                                                        lg.logger_tourney, turns_until_high_noise=0, memory=None)
             print('\nSCORES')
             print(scores)
-            print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')
-            print(sp_scores)
-            # print(points)
 
             print('\n\n')
 
