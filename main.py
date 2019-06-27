@@ -54,15 +54,15 @@ def main():
     env = Game(0)
 
     # try to find out if server is running
-    response = os.system("nc -vz localhost 80")
-    SERVER_IS_RUNNING = response == 0
 
+    SERVER_IS_RUNNING = 1
     # if selfplay
     local_training_mode = 0
+
     # with graph.as_default():
     model = nni.load_nn(config.INITIAL_MODEL_PATH)
     model._make_predict_function()
-    print(model.summary())
+    # print(model.summary())
 
     writer = tf.summary.FileWriter(logdir='logdir',
                                    graph=tf.get_default_graph())
@@ -75,16 +75,13 @@ def main():
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
+        os.popen('cd ../tinyChessServer/ && node index.js', "r")
+        sleep(1)
+
         _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env, model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env, model))
-
-        while True:
-            sleep(10)
-
-    else:
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", False, env, model, "commandlineInterface"))
 
         while True:
             sleep(10)

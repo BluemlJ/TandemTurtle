@@ -1,15 +1,21 @@
+import _thread
 from time import sleep
 import chess
 import util.logger as lg
 from game.game import Game, GameState
 import random
+import os
+
+from util.xboardInterface import XBoardInterface
+from main import create_and_run_agent
 
 
-def playMatches(player_agents, EPISODES, turns_until_high_noise, memory=None, goes_first=0):
+def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, interface, memory=None, goes_first=0):
     # TODO: test and reimplement
     env = Game(0)
     scores = {}  # TODO Scores for each player
     points = {"best_players": [], "new_players": []}
+    os.popen('cd ../tinyChessServer/')
 
     for e in range(EPISODES):
         print('====================')
@@ -17,52 +23,13 @@ def playMatches(player_agents, EPISODES, turns_until_high_noise, memory=None, go
         print('====================')
         print(str(e + 1) + ' ', end='')
 
-        state = env.reset()
+        os.popen('cd ../tinyChessServer/ && node index.js', "r")
+        sleep(1)
 
-        done = 0
-        turn = 0
-        for agent in player_agents:
-            agent.mcts = None
-
-        players = {1: {"agent": player_agents[0], "name": "best1"},
-                   2: {"agent": player_agents[1], "name": "best2"},
-                   3: {"agent": player_agents[2], "name": "new1"},
-                   4: {"agent": player_agents[3], "name": "new2"}
-                   }
-
-        # TODO who goes first
-
-        while not done:
-            turn = turn + 1
-
-            # TODO run MCTS and return an action
-
-            if memory is not None:
-                print('action: %d', action)
-                print('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)],
-                            MCTS_value, 2)
-                print('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)], NN_value, 2)
-                print('====================')
-
-                # Commit the move to memory
-                # smthing like this -> memory.commit_stmemory(env.name, state, pi)
-
-            # TODO Do the action
-            state, value, done, _ = env.step(
-                action)  # the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move
-
-            if done == 1:
-                if memory is not None:
-                    # If the game is finished, assign the values correctly to the game moves
-                    for move in memory.stmemory:
-                        if move['playerTurn'] == state.playerTurn:
-                            move['value'] = value
-                        else:
-                            move['value'] = -value
-
-                    memory.commit_ltmemory()
-
-                # TODO add 1 to the winning team and add 1 for a draw
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, best_model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, new_model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env, new_model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env, best_model))
 
     return (scores, memory, points)
 
