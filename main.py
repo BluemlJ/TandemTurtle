@@ -1,5 +1,7 @@
 from shutil import copyfile
+import subprocess
 import os
+import signal
 import _thread
 from time import sleep
 from agent import Agent
@@ -75,7 +77,7 @@ def main():
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
-        os.popen('cd ../tinyChessServer/ && node index.js', "r")
+        server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
         sleep(1)
 
         _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model))

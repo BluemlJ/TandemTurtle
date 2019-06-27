@@ -4,7 +4,7 @@ import chess
 import util.logger as lg
 from game.game import Game, GameState
 import random
-import os
+import subprocess
 
 from util.xboardInterface import XBoardInterface
 from main import create_and_run_agent
@@ -23,7 +23,7 @@ def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, interfa
         print('====================')
         print(str(e + 1) + ' ', end='')
 
-        os.popen('cd ../tinyChessServer/ && node index.js', "r")
+        server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
         sleep(1)
 
         _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, best_model))
