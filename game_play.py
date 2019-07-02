@@ -5,6 +5,7 @@ import util.logger as lg
 from game.game import Game, GameState
 import random
 import subprocess
+import config
 
 from util.xboardInterface import XBoardInterface
 from main import create_and_run_agent
@@ -66,7 +67,15 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, goes_f
         higher_noise = 1 if turn < turns_with_high_noise else 0
 
         # get action, edge_visited_rates, best_average_evaluation, next_state_evaluation
-        action, _, _, _ = player.act(state, higher_noise)
+        if config.RUN_ON_NN_ONLY:
+            action = player.act_nn(state, higher_noise)
+            print("Turn: ", turn)
+        else:
+            action, _, _, _ = player.act(state, higher_noise)
+        if player.name == "Agent 1":
+            # Enable to print boards
+            # print(state.boards)
+            pass
 
         # send message
         lg.logger_model.info(f"move {action} was played by {player.name}")

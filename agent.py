@@ -10,7 +10,6 @@ from game import input_representation, output_representation
 from util import logger as lg
 import config
 
-
 class Agent():
     ##########
     # param:
@@ -104,7 +103,28 @@ class Agent():
         lg.logger_mcts.info('EDGE_VISITED_RATE...%s', edge_visited_rates)
         lg.logger_mcts.info('CHOSEN ACTION...%s', action)
         lg.logger_mcts.info('NN PERCEIVED VALUE...%f', next_state_evaluation)
+
         return action, edge_visited_rates, best_average_evaluation, next_state_evaluation
+
+    def act_nn(self, state, higher_noise, deterministic=False):
+        """
+        Run without simulations or mcts, get move probs from NN and sample from this distr
+        :param state: Current state
+        :param higher_noise: not used
+        :param deterministic: If move is sampled or chosen with argmax
+        :return: best single move
+        """
+
+        value_head, move_probabilities, allowed_action_idxs, allowed_actions = self.get_preds(state)
+        move_probabilities = move_probabilities[allowed_action_idxs]
+        if deterministic:
+            best_move_idx = np.argmax(move_probabilities)
+        else:
+            best_move_idx = np.random.choice(len(move_probabilities), p=move_probabilities)
+
+        best_move = allowed_actions[best_move_idx]
+
+        return best_move
 
     def get_preds(self, state):
         # predict the leaf

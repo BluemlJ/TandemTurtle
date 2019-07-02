@@ -10,19 +10,20 @@ import config_training as cf
 from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
-def train(model):
+def train(network):
     # fix random seed for reproducibility
     np.random.seed(0)
 
     # load data to X and Y
     print("Loading data")
     # remove from here
-    model.load_data()
+    network.load_data()
 
-    # set up and print layer structure
-    print("Creating model")
-    model.create_network()
-    print(model.model.summary())
+    # Create network if not existent
+    if not network.model:
+        print("Creating model")
+        network.create_network()
+    print(network.model.summary())
 
     # Compile model
     print("Compiling model")
@@ -34,7 +35,7 @@ def train(model):
     # lossWeights = {"category_output": 1.0, "color_output": 1.0}
     # softmax_cross_entropy_with_logits
 
-    model.model.compile(loss=losses, optimizer='adam',
+    network.model.compile(loss=losses, optimizer='adam',
                        metrics=["accuracy", "binary_accuracy", "categorical_accuracy"])
     # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
     # Maybe try:  metrics=['accuracy']
@@ -44,40 +45,57 @@ def train(model):
 
     # Fit the model
     print("Fitting model")
-    model.model.fit_generator(model.train_data_generator,
-                             steps_per_epoch=model.n_train,
+    network.model.fit_generator(network.train_data_generator,
+                             steps_per_epoch=network.n_train,
                              epochs=cf.EPOCHS,
                              verbose=1,
-                             validation_data=model.validation_data_generator,
-                             validation_steps=model.n_val)
+                             validation_data=network.validation_data_generator,
+                             validation_steps=network.n_val)
                              #callbacks=[tensorboard])
 
     # TODO  is this automatically on gpu? cluster
     # Save the model
     print("Saving model")
-    model.model.save("model_save")
+    network.model.save("checkpoints/model_save_big")
     # evaluate the model and print the results.
     # print("Evaluating model")
     # self.evaluate_model()
 
 
 def load_pretrained(model_path):
-    print("Load Model:")
+    print("Load Pretrained Model:")
     model = load_model(model_path)
     return model
 
 
-def evaluate_model(self):
+def evaluate_model(network):
     # caculate accuracy by hand:
     correct = 0
     cor_idx = []
-    for i in range(self.n_val):
-        sample = next(self.test_data_generator)
+    for i in range(network.n_val):
+        sample = next(network.test_data_generator)
         inputs = sample[0]
         labels = sample[1]
 
-        print(inputs["input_1"])
-        predictions = self.model.predict(inputs)
+        print("shapes:")
+        print(inputs["input_1"].shape)
+        # print(inputs["input_1"])
+
+        single_in = np.expand_dims(inputs["input_1"][0], axis=0)
+        single_in2 = np.expand_dims(inputs["input_2"][0], axis=0)
+
+        inputs = {
+            "input_1": single_in,
+            "input_2": single_in2
+        }
+        print("single in shap: ", single_in.shape)
+        print("types: ", type(single_in))
+        print(inputs)
+
+        predictions = network.model.predict(inputs)
+
+        print(predictions)
+        exit()
         for j in range(cf.BATCH_SIZE):
             pred = np.argmax(predictions[1][j])
             tru = np.argmax(labels["policy_head"][j])
@@ -85,44 +103,36 @@ def evaluate_model(self):
                 correct += 1
                 cor_idx.append(pred)
 
-    acc = float(correct) / (cf.BATCH_SIZE * self.n_val)
+    acc = float(correct) / (cf.BATCH_SIZE * network.n_val)
     print("ACC:", acc)
     cor_idx = sorted(list(set(cor_idx)))
 
     print(cor_idx)
     print(len(cor_idx))
 
-    scores_test = self.model.evaluate_generator(self.test_data_generator, steps=self.n_test)
-    scores_train = self.model.evaluate_generator(self.train_data_generator, steps=self.n_train)
-    print("Metric names: ", self.model.metrics_names)
+    scores_test = network.model.evaluate_generator(network.test_data_generator, steps=network.n_test)
+    scores_train = network.model.evaluate_generator(network.train_data_generator, steps=network.n_train)
+    print("Metric names: ", network.model.metrics_names)
     print("EVAUATION TEST: ", scores_test)
     print("EVAUATION TRAIN: ", scores_train)
     # print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
     # print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
 
 
-def softmax_cross_entropy_with_logits(y_true, y_pred):
-    print("Loss used :-)")
-    p = y_pred
-    pi = y_true
-
-    zero = tf.zeros(shape=tf.shape(pi), dtype=tf.float32)
-    where = tf.equal(pi, zero)
-
-    negatives = tf.fill(tf.shape(pi), -100.0)
-    p = tf.where(where, negatives, p)
-
-    loss = tf.nn.softmax_cross_entropy_with_logits(labels=pi, logits=p)
-
-    return loss
-
-
 def main():
     network = NeuralNetwork()
-    network.model = load_pretrained("model_save")
-    #train(network)
-    exit()
-    network.evaluate()
+    if cf.RESTORE_CHECKPOINT:
+        path = "checkpoints/model_save_big"
+        if cf.GDRIVE_FOLDER:
+            path = "/content/" + path
+        print("Restore Checkpoint from ", path)
+        network.model = load_pretrained(path)
+    train(network)
+    # exit()
+    print("Loading data")
+    # remove from here
+    # network.load_data()
+    evaluate_model(network)
 
 
 if __name__ == "__main__":

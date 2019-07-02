@@ -14,6 +14,7 @@ from util.xboardInterface import XBoardInterface
 import tensorflow as tf
 from self_play_training import self_play
 import util.nn_interface as nni
+import threading
 
 intro_message =\
 """
@@ -61,10 +62,15 @@ def main():
     # if selfplay
     local_training_mode = 0
 
-    # with graph.as_default():
-    model = nni.load_nn(config.INITIAL_MODEL_PATH)
+    if config.INITIAL_MODEL_PATH:
+        model = nni.load_nn(config.INITIAL_MODEL_PATH)
+    else:
+        model = nni.load_nn(config.PRETRAINED_MODEL_PATH)
     model._make_predict_function()
-    # print(model.summary())
+
+    # Add to agents if you want to have a random model
+    rand_model = nni.load_nn("")
+    rand_model._make_predict_function()
 
     writer = tf.summary.FileWriter(logdir='logdir',
                                    graph=tf.get_default_graph())
@@ -77,6 +83,7 @@ def main():
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
+
         server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
         sleep(1)
 
