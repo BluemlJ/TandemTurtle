@@ -8,7 +8,7 @@ class XBoardInterface():
     def __init__(self, name, interfaceType="websocket"):
         self.interfaceType = interfaceType
         if interfaceType == "websocket":
-            self.ws = create_connection("ws://localhost:80/websocketclient")
+            self.ws = create_connection("ws://localhost:8080/websocketclient")
         self.name = name
         self.gameStarted = False
         self.isMyTurn = False
@@ -55,7 +55,6 @@ class XBoardInterface():
 
     def stripMessage(self, message):
         return str(message).split(' ')[-1]
-    
 
     def logViaInterfaceType(self, message):
         if self.interfaceType == "websocket":

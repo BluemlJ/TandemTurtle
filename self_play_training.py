@@ -82,7 +82,7 @@ def self_play(env, max_iteration=2500):
         print('BEST PLAYER VERSION ' + str(best_player_version))
 
         print('SELF PLAYING ' + str(config.EPISODES) + ' EPISODES...')
-        _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main,
+        _, memory = playMatches(best_model, best_model, config.EPISODES, lg.logger_main,
                                       turns_until_high_noise=config.TURNS_WITH_HIGH_NOISE, memory=memory)
         print('\n')
 
@@ -119,7 +119,7 @@ def self_play(env, max_iteration=2500):
                 s['state'].render(lg.logger_memory)
 
             print('TOURNAMENT...')
-            scores, _, points = playMatches(best_player, new_player, config.EVAL_EPISODES,
+            scores, _ = playMatches(best_model, new_model, config.EVAL_EPISODES,
                                                        lg.logger_tourney, turns_until_high_noise=0, memory=None)
             print('\nSCORES')
             print(scores)

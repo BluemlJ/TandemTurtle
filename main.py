@@ -59,8 +59,9 @@ def main():
     # try to find out if server is running
 
     SERVER_IS_RUNNING = 1
-    # if selfplay
+    # if selfplayserver
     local_training_mode = 0
+    cli_mode = 0
 
     if config.INITIAL_MODEL_PATH:
         model = nni.load_nn(config.INITIAL_MODEL_PATH)
@@ -84,8 +85,9 @@ def main():
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
     elif SERVER_IS_RUNNING:
 
+        os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
         server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
-        sleep(1)
+        sleep(5)
 
         _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, model))
@@ -94,6 +96,19 @@ def main():
 
         while True:
             sleep(10)
+    elif cli_mode:
+
+        os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
+        server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+
+        sleep(5)
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model, "websocket"))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", True, env, model, "websocket"))
+        while True:
+            sleep(10)
+    else:
+        # TODO start agent
+        pass
 
 
 if __name__ == "__main__":

@@ -11,12 +11,10 @@ from util.xboardInterface import XBoardInterface
 from main import create_and_run_agent
 
 
-def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, interface, memory=None, goes_first=0):
+def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, memory=None):
     # TODO: test and reimplement
     env = Game(0)
     scores = {}  # TODO Scores for each player
-    points = {"best_players": [], "new_players": []}
-    os.popen('cd ../tinyChessServer/')
 
     for e in range(EPISODES):
         print('====================')
@@ -27,12 +25,13 @@ def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, interfa
         server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
         sleep(1)
 
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, best_model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, best_model, server))
         _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, new_model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env, new_model))
         _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env, best_model))
 
-    return (scores, memory, points)
+        # TODO count the score and points
+    return (scores, memory)
 
 
 def play_websocket_game(player, logger, interface, turns_with_high_noise, goes_first):
@@ -84,6 +83,8 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, goes_f
 
         # Do the action
         state, value, done, _ = env.step(action)
+        lg.logger_main.info(f"Turn number: {turn}")
+        env.gameState.render(lg.logger_main)
 
         # the value of the newState from the POV of the new playerTurn
         # i.e. -1 if the previous player played a winning move
