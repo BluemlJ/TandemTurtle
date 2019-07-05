@@ -28,7 +28,7 @@ class NeuralNetwork:
         self.train_data_generator = None
         self.validation_data_generator = None
         self.test_data_generator = None
-        self.in_dim = (34, 8, 8)
+        self.in_dim = cf.INPUT_SHAPE_CHANNELS_LAST
         self.out_dim_value_head = 1
         self.out_dim_policy_head = 2272     # TODO: maybe make it dynamic not hard coded
         self.n_train = None
@@ -66,7 +66,7 @@ class NeuralNetwork:
             self.n_test = ceil(test_size / cf.BATCH_SIZE)
 
     def create_network(self):
-        keras.backend.set_image_data_format('channels_last')  # TODO Make data channels last !!!!!!
+        keras.backend.set_image_data_format('channels_last')
         # create input
         board_input = Input(shape=self.in_dim)
 

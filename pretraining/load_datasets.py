@@ -1,6 +1,6 @@
+from game import input_representation, output_representation
 import config_training as cf
 import keras
-from game import input_representation, output_representation
 import csv
 import gzip
 import os
@@ -15,6 +15,7 @@ from chess.variant import BughouseBoards
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
 N_SAMPLES = 1_000_000_000        # Full Number = 1_342_846_339
 SHUFFLE_BUFFER_SIZE = 5000
 
@@ -41,7 +42,7 @@ def load_data(batch_size, path="data/data.csv.gz"):
 
     full_dataset = tf.data.Dataset.from_generator(data_generator_processed,
                                                 output_types=({'input_1': tf.float32, 'input_2': tf.float32}, {'value_head': tf.float32, 'policy_head': tf.float32}),
-                                                output_shapes=({'input_1': tf.TensorShape((34, 8, 8)), 'input_2': tf.TensorShape((34, 8, 8))},
+                                                output_shapes=({'input_1': tf.TensorShape(cf.INPUT_SHAPE_CHANNELS_LAST), 'input_2': tf.TensorShape(cf.INPUT_SHAPE_CHANNELS_LAST)},
                                                             {'value_head': tf.TensorShape(()), 'policy_head': tf.TensorShape((2272,))}))
 
     train_size = int(0.8 * n_samples)
@@ -80,12 +81,12 @@ def data_generator_processed(path=cf.GDRIVE_FOLDER + "data/data.csv.gz", both_bo
             y = np.array(int(result))
             y2 = output_representation.move_to_policy(move, is_white_to_move=board.turn)
             x1 = input_representation.board_to_planes(board)
-
+            x1 = np.moveaxis(x1, 0, 2)
             if both_boards:
                 x2 = input_representation.board_to_planes(partner_board)
                 # change channels first to channels last format
-                # x1 = np.moveaxis(x1, 0, 2)
-                # x2 = np.moveaxis(x2, 0, 2)
+
+                x2 = np.moveaxis(x2, 0, 2)
                 yield ({'input_1': x1, 'input_2': x2}, {'value_head': y, 'policy_head': y2})
             else:
                 yield ({'input_1': x1}, {'value_head': y, 'policy_head': y2})

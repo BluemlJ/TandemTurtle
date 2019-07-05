@@ -14,6 +14,8 @@ TEST_MODE = False
 RESTORE_CHECKPOINT = False
 # Set to "" if not in google colab
 GDRIVE_FOLDER = ""  # "drive/My Drive/KI_Praktikum/pretraining/"
+INPUT_SHAPE = (34, 8, 8)
+INPUT_SHAPE_CHANNELS_LAST = (8, 8, 34)
 
 print("\n\n----------------------------------------")
 print("Training Configurations:")
