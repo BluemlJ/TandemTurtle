@@ -1,6 +1,7 @@
 # python-chess
 chess/
 run/
+logdir/
 
 # data
 *.bpgn
