@@ -39,45 +39,11 @@ class NeuralNetwork:
         self.create_network()
 
     def load_data(self):
-        """
-        self.train_data_generator = generate_value_policy_batch(
-            cf.BATCH_SIZE,
-            cf.GDRIVE_FOLDER + "data/position.train",
-            cf.GDRIVE_FOLDER + "data/result.train",
-            cf.GDRIVE_FOLDER + "data/nm.train")
-        self.validation_data_generator = generate_value_policy_batch(
-            cf.BATCH_SIZE,
-            cf.GDRIVE_FOLDER + "data/position.validation",
-            cf.GDRIVE_FOLDER + "data/result.validation",
-            cf.GDRIVE_FOLDER + "data/nm.validation")
-        self.test_data_generator = generate_value_policy_batch(
-            cf.BATCH_SIZE,
-            cf.GDRIVE_FOLDER + "data/position.test",
-            cf.GDRIVE_FOLDER + "data/result.test",
-            cf.GDRIVE_FOLDER + "data/nm.test")
-
-        # TODO remove, it is for debugging
-        sample = next(self.train_data_generator)
-        print("Train data generator shapes")
-        [[print(f"{key}: {x[key].shape}") for key in x] for x in sample]
-
-        if cf.TEST_MODE:
-            print("\n\n\n --------------------------------------- \n")
-            print("RUNNING IN TEST MODE")
-            print("\n --------------------------------------- \n\n\n")
-            self.n_train = 1
-            self.n_val = 1
-            self.n_test = 1
-        else:
-            self.n_train = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.train") / cf.BATCH_SIZE)
-            self.n_val = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.validation") / cf.BATCH_SIZE)
-            self.n_test = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.test") / cf.BATCH_SIZE)
-        """
 
         train, val, test, train_size, val_size, test_size = load_datasets.load_data(cf.BATCH_SIZE, cf.GDRIVE_FOLDER + "data/data.csv.gz")
-        self.train_data_generator = train  # tf.compat.v1.data.make_one_shot_iterator(train)
-        self.validation_data_generator = val  # tf.compat.v1.data.make_one_shot_iterator(val)
-        self.test_data_generator = test  # tf.compat.v1.data.make_one_shot_iterator(test)
+        self.train_data_generator = train
+        self.validation_data_generator = val
+        self.test_data_generator = test
         iter = train.make_initializable_iterator()
         el = iter.get_next()
         with tf.Session() as sess:

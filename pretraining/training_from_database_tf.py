@@ -8,7 +8,6 @@ import numpy as np
 from nn_tf import NeuralNetwork
 from tensorflow.keras.models import load_model
 import config_training as cf
-from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
 def train(model):
@@ -45,15 +44,7 @@ def train(model):
 
     # Fit the model
     print("Fitting model")
-    """
-    model.model.fit_generator(model.train_data_generator,
-                             steps_per_epoch=model.n_train,
-                             epochs=cf.EPOCHS,
-                             verbose=1,
-                             validation_data=model.validation_data_generator,
-                             validation_steps=model.n_val)
-                             #callbacks=[tensorboard])
-    """
+
     model.model.fit(model.train_data_generator,
                     steps_per_epoch=model.n_train,
                     epochs=cf.EPOCHS,
@@ -102,8 +93,8 @@ def evaluate_model(self):
     print(cor_idx)
     print(len(cor_idx))
 
-    scores_test = self.model.evaluate_generator(self.test_data_generator, steps=self.n_test)
-    scores_train = self.model.evaluate_generator(self.train_data_generator, steps=self.n_train)
+    scores_test = self.model.evaluate(self.test_data_generator, steps=self.n_test)
+    scores_train = self.model.evaluate(self.train_data_generator, steps=self.n_train)
     print("Metric names: ", self.model.metrics_names)
     print("EVAUATION TEST: ", scores_test)
     print("EVAUATION TRAIN: ", scores_train)
