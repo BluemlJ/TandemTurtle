@@ -57,41 +57,42 @@ def parse_all_positions(in_dir="../database_extraction/data/", out_dir="data/"):
                     game = chess.pgn.read_game(f)
 
 
-# def splits(dir="data/"):
-#     """
-#     Splits data into train/validation/tset file
-#     TODO make split size parameters
-#     :param dir: data dir
-#     """
-#     with open(dir + "all_boards.txt", "r") as all_boards, \
-#             open(dir + "results.txt", "r") as labels, \
-#             open(dir + "next_move.txt", 'r') as next_moves,\
-#             open(dir + "position.train", 'w') as p_train,\
-#             open(dir + "position.validation", 'w') as p_validation,\
-#             open(dir + "position.test", 'w') as p_test,\
-#             open(dir + "result.train", 'w') as v_train,\
-#             open(dir + "result.validation", 'w') as v_validation,\
-#             open(dir + "result.test", 'w') as v_test, \
-#             open(dir + "nm.train", 'w') as nm_train, \
-#             open(dir + "nm.validation", 'w') as nm_validation, \
-#             open(dir + "nm.test", 'w') as nm_test:\
-#
-#         # shuffle_files(["all_boards.txt","results.txt","next_move.txt"]) TODO
-#
-#         for i, (position, result, nm) in enumerate(zip(all_boards, labels, next_moves)):
-#             # every tenth point as test
-#             if i % 10 == 0:
-#                 p_test.write(position)
-#                 v_test.write(result)
-#                 nm_test.write(nm)
-#             elif i % 15 == 0:
-#                 p_validation.write(position)
-#                 v_validation.write(result)
-#                 nm_validation.write(nm)
-#             else:
-#                 p_train.write(position)
-#                 v_train.write(result)
-#                 nm_train.write(nm)
+def splits(dir="data/"):
+    """
+    Splits data into train/validation/tset file
+    Use not if training with tf.data (train_from_database_tf)
+    TODO make split size parameters
+    :param dir: data dir
+    """
+    with open(dir + "all_boards.txt", "r") as all_boards, \
+            open(dir + "results.txt", "r") as labels, \
+            open(dir + "next_move.txt", 'r') as next_moves,\
+            open(dir + "position.train", 'w') as p_train,\
+            open(dir + "position.validation", 'w') as p_validation,\
+            open(dir + "position.test", 'w') as p_test,\
+            open(dir + "result.train", 'w') as v_train,\
+            open(dir + "result.validation", 'w') as v_validation,\
+            open(dir + "result.test", 'w') as v_test, \
+            open(dir + "nm.train", 'w') as nm_train, \
+            open(dir + "nm.validation", 'w') as nm_validation, \
+            open(dir + "nm.test", 'w') as nm_test:\
+
+        # shuffle_files(["all_boards.txt","results.txt","next_move.txt"]) TODO
+
+        for i, (position, result, nm) in enumerate(zip(all_boards, labels, next_moves)):
+            # every tenth point as test
+            if i % 10 == 0:
+                p_test.write(position)
+                v_test.write(result)
+                nm_test.write(nm)
+            elif i % 15 == 0:
+                p_validation.write(position)
+                v_validation.write(result)
+                nm_validation.write(nm)
+            else:
+                p_train.write(position)
+                v_train.write(result)
+                nm_train.write(nm)
 
 
 def compressed_data(dir="data/"):
@@ -99,16 +100,22 @@ def compressed_data(dir="data/"):
             open(dir + "results.txt", "r") as labels, \
             open(dir + "next_move.txt", 'r') as next_moves:
         with gzip.open(dir + "data.csv.gz", 'wt') as f:
+            n = 0
             for i, (position, result, nm) in enumerate(zip(all_boards, labels, next_moves)):
 
                 if 'end' in nm:
                     continue
-
+                n += 1
                 writer = csv.writer(f, delimiter=';')
                 writer.writerow([position, result, nm])
-            print("Num samples: %i" % i)
+            print("Num samples: %i" % n)
 
 
-# parse_all_positions()
-# splits()
-compressed_data()
+def main():
+    # parse_all_positions()
+    # splits()
+    compressed_data()
+
+
+if __name__ == "__main__":
+    main()
