@@ -1,7 +1,11 @@
 # python-chess
 chess/
+
+# logs
 run/
 logdir/
+pretraining/data/
+pretraining/checkpoints/
 
 # data
 *.bpgn
