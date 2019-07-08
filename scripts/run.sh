@@ -5,16 +5,16 @@
 
 POSITION=''
 
-while getopts p:s: option; do
+while getopts port:id:position: option; do
     case "${option}" in
         port)
-            echo "You set flag -p"
             PORT=${OPTARG};;
+        id)
+            ID=${OPTARG};;
         position)
-            echo "You set flag -b"
             POSITION=${OPTARG};;
     esac
 done
 
 # start our Agent
-python main.py single_agent 0 $PORT $POSITION
+python main.py single_agent 0 $PORT $ID $POSITION

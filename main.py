@@ -47,7 +47,7 @@ def create_and_run_agent(name, env, model, interfaceType="websocket", server_add
     game_play.play_websocket_game(agent1, lg.logger_main, interface, turns_with_high_noise=config.TURNS_WITH_HIGH_NOISE)
 
 
-def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/websocketclient"):
+def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/websocketclient", game_id=""):
     # graph = tf.Graph()
 
     # print(intro_message)
@@ -115,14 +115,15 @@ if __name__ == "__main__":
     start_server = 1
     port = "8080"
     position = ""
+    game_id = "gameid"
 
     if len(sys.argv) > 1:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
         port = str(sys.argv[3])
-    if len(sys.argv) == 5:
-        position = str(sys.argv[4])
+        game_id = str(sys.argv[4])
+    if len(sys.argv) == 6:
+        position = f"?{str(sys.argv[5])}=\""
 
     server_address = f"ws://localhost:{port}/websocketclient{position}"
-
     main(mode, start_server, server_address)
