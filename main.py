@@ -15,8 +15,9 @@ import tensorflow as tf
 from self_play_training import self_play
 import util.nn_interface as nni
 import threading
+import sys
 
-intro_message =\
+# intro_message =\
 """
 
                         __   __
@@ -36,21 +37,21 @@ ASCII-Art: Joan Stark
 """
 
 
-def create_and_run_agent(name, isStarting, env, model, interfaceType="websocket"):
-    interface = XBoardInterface(name, interfaceType)
+def create_and_run_agent(name, env, model, interfaceType="websocket", server_address="ws://localhost:8080/websocketclient"):
+    interface = XBoardInterface(name, interfaceType, server_address)
 
     agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
 
     while not interface.gameStarted:
         sleep(0.1)
 
-    game_play.play_websocket_game(agent1, lg.logger_main, interface, turns_with_high_noise=config.TURNS_WITH_HIGH_NOISE, goes_first=isStarting)
+    game_play.play_websocket_game(agent1, lg.logger_main, interface, turns_with_high_noise=config.TURNS_WITH_HIGH_NOISE)
 
 
-def main():
+def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/websocketclient"):
     # graph = tf.Graph()
 
-    print(intro_message)
+    # print(intro_message)
     np.set_printoptions(suppress=True)
 
     # TODO created twice why not give as parameter
@@ -58,16 +59,8 @@ def main():
 
     # try to find out if server is running
 
-    SERVER_IS_RUNNING = 1
-    # if selfplayserver
-    local_training_mode = 0
-    cli_mode = 0
-
     if config.INITIAL_MODEL_PATH:
         model = nni.load_nn(config.INITIAL_MODEL_PATH)
-    else:
-        model = nni.load_nn(config.PRETRAINED_MODEL_PATH)
-    model._make_predict_function()
 
     # Add to agents if you want to have a random model
     rand_model = nni.load_nn("")
@@ -77,39 +70,59 @@ def main():
                                    graph=tf.get_default_graph())
     writer.flush()
 
-    # If we want to learn instead of playing
-    if local_training_mode:
+    # If we want to learn instead of playing (NOT FINISHED)
+    if mode == "selfplay":
         new_best_model, version = self_play(env)
         nni.save_nn(f"run/models/{version}", new_best_model)
 
     #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
-    elif SERVER_IS_RUNNING:
+    elif mode == "auto-4":
 
-        os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
-        server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
-        sleep(5)
+        if start_server:
+            os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
+            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+            sleep(5)
 
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", False, env, model))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 3", True, env, model))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 4", False, env, model))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", env, model, "websocket", server_address))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", env, model, "websocket", server_address))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 3", env, model, "websocket", server_address))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 4", env, model, "websocket", server_address))
 
         while True:
             sleep(10)
-    elif cli_mode:
 
-        os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
-        server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+    elif mode == "2vsSjeng":
 
-        sleep(5)
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", True, env, model, "websocket"))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", True, env, model, "websocket"))
+        if start_server:
+            os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
+            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+            sleep(5)
+
+        _thread.start_new_thread(create_and_run_agent, ("Agent 1", env, model, "websocket"))
+        _thread.start_new_thread(create_and_run_agent, ("Agent 2", env, model, "websocket"))
+
         while True:
             sleep(10)
-    else:
-        # TODO start agent
-        pass
+
+    elif mode == "singleAgent":
+
+        _thread.start_new_thread(create_and_run_agent, ("TandemTurtle", env, model, "websocket", server_address))
+        while True:
+            sleep(10)
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 1:
+        mode = "auto-4"
+        start_server = 1
+        port = "8080"
+        position = ""
+    else:
+        mode = str(sys.argv[1])
+        start_server = int(sys.argv[2])
+        port = str(sys.argv[3])
+        position = str(sys.argv[4])
+
+    server_address = f"ws://localhost:{port}/websocketclient{position}"
+
+    main(mode, start_server, server_address)
