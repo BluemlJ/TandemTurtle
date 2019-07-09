@@ -10,15 +10,28 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
 from tensorflow.keras.models import Model
 from math import ceil
+import keras.backend as K
+
+if __name__ == "pretraining.nn_tf":
+    # Check if module is called from main
+    import pretraining.config_training as cf
+    import pretraining.load_datasets as load_datasets
+elif __name__ == "nn_tf":
+    # Check if module is called from main
+    import load_datasets
+    import config_training as cf
+else:
+    raise ImportError(f"Name: {__name__} not found")
 
 
-from tensorflow.python.keras.callbacks import TensorBoard
-import time
-# import config_training as cf
-import config_training as cf
-# from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
-import load_datasets
-#from pretraining.data_generator import generate_value_batch, num_samples, generate_value_policy_batch
+def sign_metric(y_true, y_pred):
+    """
+    self defined metric for value head
+    :param y_true:
+    :param y_pred:
+    :return:
+    """
+    return K.mean(K.equal(K.sign(y_pred), y_true))
 
 
 class NeuralNetwork:
@@ -189,7 +202,7 @@ class NeuralNetwork:
             x = Dense(
                 self.out_dim_policy_head,
                 use_bias=False,
-                activation='linear',
+                activation='softmax',
                 kernel_regularizer=regularizers.l2(cf.REG_CONST),
                 name='policy_head'
             )(x)

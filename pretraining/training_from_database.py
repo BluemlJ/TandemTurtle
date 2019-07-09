@@ -7,17 +7,13 @@ import numpy as np
 from nn import NeuralNetwork
 from keras.models import load_model
 import config_training as cf
+import keras.backend as K
 from data_generator import generate_value_batch, num_samples, generate_value_policy_batch
 
 
 def train(network):
     # fix random seed for reproducibility
     np.random.seed(0)
-
-    # load data to X and Y
-    print("Loading data")
-    # remove from here
-    network.load_data()
 
     # Create network if not existent
     if not network.model:
@@ -32,19 +28,24 @@ def train(network):
         "policy_head": "categorical_crossentropy",
         "value_head": "mean_squared_error",
     }
-    # lossWeights = {"category_output": 1.0, "color_output": 1.0}
-    # softmax_cross_entropy_with_logits
+
+    # TODO: add own metric for value accuracy so that it checks if the sign of value is correct
+    # Can be done by def metric ...
+    # K.sign(
+    def sign_metric(y_true, y_pred):
+        return K.mean(K.equal(K.sign(y_pred), y_true))
 
     network.model.compile(loss=losses, optimizer='adam',
-                       metrics=["accuracy", "binary_accuracy", "categorical_accuracy"])
-    # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
-    # Maybe try:  metrics=['accuracy']
+                          metrics=["accuracy", sign_metric])
+    # RMS Prop verwenden
+    # SGD with momentum
 
-    # visualizo with Tensorboard
+    # Visualizo with Tensorboard
     # tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()))
 
     # Fit the model
     print("Fitting model")
+
     network.model.fit_generator(network.train_data_generator,
                              steps_per_epoch=network.n_train,
                              epochs=cf.EPOCHS,
@@ -52,15 +53,14 @@ def train(network):
                              validation_data=network.validation_data_generator,
                              validation_steps=network.n_val)
                              #callbacks=[tensorboard])
-
-    # TODO  is this automatically on gpu? cluster
-    # Save the model
     print("Saving model")
     network.model.save("checkpoints/model_save_big")
-    # evaluate the model and print the results.
-    # print("Evaluating model")
-    # self.evaluate_model()
 
+    # train_on_batches(network)
+
+
+def train_on_batches(network):
+    network.model.predi
 
 def load_pretrained(model_path):
     print("Load Pretrained Model:")
@@ -115,23 +115,25 @@ def evaluate_model(network):
     print("Metric names: ", network.model.metrics_names)
     print("EVAUATION TEST: ", scores_test)
     print("EVAUATION TRAIN: ", scores_train)
-    # print("\nTest data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_test[1] * 100))
-    # print("\nTraining data accuracy %s: %.2f%%" % (self.model.metrics_names[1], scores_train[1] * 100))
 
 
 def main():
+    print("DERICATED PLEASE USE _tf")
+    exit(-1)
+
     network = NeuralNetwork()
     if cf.RESTORE_CHECKPOINT:
-        path = "checkpoints/model_save_big"
+        path = "checkpoints/old_model"
         if cf.GDRIVE_FOLDER:
             path = "/content/" + path
         print("Restore Checkpoint from ", path)
         network.model = load_pretrained(path)
-    train(network)
-    # exit()
+
     print("Loading data")
-    # remove from here
-    # network.load_data()
+    network.load_data()
+
+    train(network)
+
     evaluate_model(network)
 
 

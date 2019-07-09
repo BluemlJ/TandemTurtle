@@ -1,29 +1,33 @@
-from game import input_representation, output_representation
-import config_training as cf
-import keras
 import csv
 import gzip
 import os
 import sys
-
 import numpy as np
 import tensorflow as tf
 
-import chess
-from chess.variant import BughouseBoards
-
-PACKAGE_PARENT = '..'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-
-N_SAMPLES = 1_000_000_000        # Full Number = 1_342_846_339
-SHUFFLE_BUFFER_SIZE = 5000
+if __name__ == "pretraining.load_datasets":
+    # ------- CALLED FROM main -------
+    import pretraining.config_training as cf
+    from game import input_representation, output_representation
+    import chess
+    from chess.variant import BughouseBoards
+elif __name__ == "load_datasets":
+    # ---- CALLED FROM training_from_database -----
+    import config_training as cf
+    PACKAGE_PARENT = '..'
+    SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+    sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+    from game import input_representation, output_representation
+    import chess
+    from chess.variant import BughouseBoards
+else:
+    raise ImportError(f"Name: {__name__} not found")
 
 
 def tfdata(dataset, batch_size, is_training):
     # Construct a data generator using `tf.Dataset`.
     if is_training:
-        dataset = dataset.shuffle(SHUFFLE_BUFFER_SIZE)
+        dataset = dataset.shuffle(cf.SHUFFLE_BUFFER_SIZE)
     dataset = dataset.batch(batch_size, drop_remainder=True)
     dataset = dataset.repeat()
     dataset.prefetch(buffer_size=2)
@@ -32,13 +36,13 @@ def tfdata(dataset, batch_size, is_training):
 
 def load_data(batch_size, path="data/data.csv.gz"):
     n_samples = 0
-    if N_SAMPLES == None:
+    if cf.N_SAMPLES == None:
         print("counting samples")
         with gzip.open(path, 'rt') as f:
             for l in f:
                 n_samples += 1
     else:
-        n_samples = N_SAMPLES
+        n_samples = cf.N_SAMPLES
 
     full_dataset = tf.data.Dataset.from_generator(data_generator_processed,
                                                 output_types=({'input_1': tf.float32, 'input_2': tf.float32}, {'value_head': tf.float32, 'policy_head': tf.float32}),
@@ -48,7 +52,7 @@ def load_data(batch_size, path="data/data.csv.gz"):
     train_size = int(0.8 * n_samples)
     val_size = int(0.10 * n_samples)
     test_size = int(0.10 * n_samples)
-    full_dataset = full_dataset.shuffle(SHUFFLE_BUFFER_SIZE, seed=42)
+    full_dataset = full_dataset.shuffle(cf.SHUFFLE_BUFFER_SIZE, seed=42)
     train_dataset = full_dataset.take(train_size)
     test_dataset = full_dataset.skip(train_size)
     val_dataset = test_dataset.skip(val_size)

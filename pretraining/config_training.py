@@ -1,6 +1,10 @@
 
 BATCH_SIZE = 256
 EPOCHS = 20
+# Number of samples to take from whole set (1_342_846_339)
+N_SAMPLES = 5_120
+SHUFFLE_BUFFER_SIZE = 5000
+
 REG_CONST = 0.0001
 LEARNING_RATE = 0.1
 MOMENTUM = 0.9
@@ -23,4 +27,5 @@ print("Epochs: ", EPOCHS)
 print("Nr Residual Layers: ", NR_RESIDUAL_LAYERS)
 print("Restore checkpoint: ", RESTORE_CHECKPOINT)
 print("Test mode: ", TEST_MODE)
+print("Num samples from database: ", N_SAMPLES)
 print("----------------------------------------\n\n")

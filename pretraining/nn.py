@@ -195,7 +195,7 @@ class NeuralNetwork:
             x = Dense(
                 self.out_dim_policy_head,
                 use_bias=False,
-                activation='linear',
+                activation='softmax',
                 kernel_regularizer=regularizers.l2(cf.REG_CONST),
                 name='policy_head'
             )(x)

@@ -5,9 +5,12 @@ TODO shuffle data after every epoch
 """
 import tensorflow as tf
 import numpy as np
-from nn_tf import NeuralNetwork
+from nn_tf import NeuralNetwork, sign_metric
 from tensorflow.keras.models import load_model
 import config_training as cf
+from keras.callbacks import TensorBoard
+import time
+from keras.optimizers import SGD
 
 
 def train(model):
@@ -31,16 +34,16 @@ def train(model):
         "policy_head": "categorical_crossentropy",
         "value_head": "mean_squared_error",
     }
-    # lossWeights = {"category_output": 1.0, "color_output": 1.0}
-    # softmax_cross_entropy_with_logits
+    loss_weights = {"policy_head": 10.0, "value_head": 1.0}
 
-    model.model.compile(loss=losses, optimizer='adam',
-                       metrics=["accuracy", "binary_accuracy", "categorical_accuracy"])
-    # Maybe try: optimizer=SGD(lr=self.learning_rate, momentum = cf.MOMENTUM) (like model.py)
-    # Maybe try:  metrics=['accuracy']
+    metrics = ["accuracy", sign_metric]
+    # optimizer = "adam"
+    optimizer = "sgd"
 
-    # visualizo with Tensorboard
-    # tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()))
+    model.model.compile(loss=losses, optimizer=optimizer, metrics=metrics, loss_weights=loss_weights)
+
+    # Vsualizo with Tensorboard
+    tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()))
 
     # Fit the model
     print("Fitting model")
@@ -50,8 +53,9 @@ def train(model):
                     epochs=cf.EPOCHS,
                     verbose=1,
                     validation_data=model.validation_data_generator,
-                    validation_steps=model.n_val, use_multiprocessing=True)
-    # callbacks=[tensorboard])
+                    validation_steps=model.n_val,
+                    use_multiprocessing=True,
+                    callbacks=[tensorboard])
 
     # TODO  is this automatically on gpu? cluster
     # Save the model
@@ -118,9 +122,47 @@ def softmax_cross_entropy_with_logits(y_true, y_pred):
     return loss
 
 
+def learning_rate(epoch):
+    """
+    50 000 000
+    # at 0.5 1e8 lr = 0.35
+    # at 0.75 1e8 lr = 0.05
+    atfer that linaer until 2
+    than constantly
+
+    This assumes around 15 000 000 total samples
+    epoch 3
+    """
+    # TODO:
+    raise NotImplementedError
+
+    print("Current Epoch starting at 0?: ", epoch)
+    processed_samples = (epoch-1) * cf.N_SAMPLES
+
+    if epoch > 20:
+        return 0.005
+    elif epoch > 7:
+        return 0.05
+    elif epoch > 4:
+        pass
+    """
+    weird stuff
+    if processed_samples > 200_000_000:
+        return 0.005
+    elif processed_samples > 75_000_000:
+        return 75_000_000 * 0.05 / processed_samples
+    """
+
+
 def main():
     network = NeuralNetwork()
-    #network.model = load_pretrained("model_save")
+    if cf.RESTORE_CHECKPOINT:
+        path = "checkpoints/old_model"
+        if cf.GDRIVE_FOLDER:
+            path = "/content/" + path
+        print("Restore Checkpoint from ", path)
+        network.model = load_pretrained(path)
+
     train(network)
     exit()
     network.evaluate()
