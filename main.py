@@ -51,9 +51,8 @@ def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/webs
     # graph = tf.Graph()
 
     # print(intro_message)
-    np.set_printoptions(suppress=True)
-
-    # TODO created twice why not give as parameter
+    # np.set_printoptions(suppress=True)
+     # TODO created twice why not give as parameter
     env = Game(0)
 
     # try to find out if server is running
