@@ -5,10 +5,10 @@ import time
 
 
 class XBoardInterface():
-    def __init__(self, name, interfaceType="websocket"):
+    def __init__(self, name, interfaceType, server_address):
         self.interfaceType = interfaceType
         if interfaceType == "websocket":
-            self.ws = create_connection("ws://localhost:8080/websocketclient")
+            self.ws = create_connection(server_address)
         self.name = name
         self.gameStarted = False
         self.isMyTurn = False

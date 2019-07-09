@@ -34,7 +34,7 @@ def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, memory=
     return (scores, memory)
 
 
-def play_websocket_game(player, logger, interface, turns_with_high_noise, goes_first):
+def play_websocket_game(player, logger, interface, turns_with_high_noise):
     while interface.color is None:
         sleep(0.01)
     env = Game(0)

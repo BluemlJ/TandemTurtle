@@ -13,7 +13,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     cur_path = os.getcwd()
-    folder_path = cur_path + "/run/logs/"
+    folder_path = cur_path + run_folder + "/logs"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 

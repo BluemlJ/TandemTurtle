@@ -6,7 +6,6 @@ INITIAL_RUN_NUMBER = None
 INITIAL_MODEL_VERSION = None
 INITIAL_MEMORY_VERSION = None
 INITIAL_MODEL_PATH = "/run/models/best_model_10_res"
-PRETRAINED_MODEL_PATH = "/run/models/best_model_10_res"
 
 # MCTS
 RUN_ON_NN_ONLY = False

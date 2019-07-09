@@ -51,7 +51,7 @@ class Edge:
         self.stats = {
             'node_visits': 0,
             'node_total_evaluation': 0,
-            'node_average_evaluation': 0,
+            'node_average_evaluation': -1,
             'action_probability': prior,
         }
 
