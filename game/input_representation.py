@@ -30,11 +30,11 @@ from game.util import MATRIX_NORMALIZER, get_board_position_index, get_row_col, 
 from chess.variant import SingleBughouseBoard
 
 
-def board_to_planes(board, board_occ=0, normalize=True):
+def board_to_planes(board, board_occ=0, normalize=True, channels_last=True):
     """
     Gets the plane representation of a given board state.
     (Now history of past board positions is used.)
-
+    channels_last = if represantation should be: (8,8,34)
     ## Crazyhouse:
 
     Feature | Planes
@@ -211,6 +211,8 @@ def board_to_planes(board, board_occ=0, normalize=True):
         planes *= MATRIX_NORMALIZER
         # planes = normalize_input_planes(planes)
 
+    if channels_last:
+        planes = np.moveaxis(planes, 0, 2)
     # return the plane representation of the given board
     return planes
 

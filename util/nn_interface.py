@@ -1,5 +1,5 @@
-from pretraining.nn import NeuralNetwork
-from keras.models import load_model
+from pretraining.nn_tf import NeuralNetwork, sign_metric
+from tensorflow.keras.models import load_model
 import os
 
 
@@ -13,7 +13,8 @@ def load_nn(path_to_nn=""):
         path = os.getcwd()
         print("Load nn from ", path + path_to_nn)
         nn = NeuralNetwork()
-        nn.model = load_model(path + path_to_nn)
+        nn.model = load_model(path + path_to_nn,
+                              custom_objects={'sign_metric': sign_metric})
         model = nn.model
     return model
 

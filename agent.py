@@ -152,12 +152,26 @@ class Agent():
         policy_head[mask] = -100
 
         odds = np.exp(policy_head)
+        # TODO add temperature
         move_probabilities = odds / np.sum(odds)
 
         allowed_actions = [output_representation.policy_idx_to_move
                            (idx, is_white_to_move=board.turn, board_id=board.board_id) for idx in allowed_action_idxs]
 
+        # Enable to print action prob
+        # self.print_action_prob(move_probabilities, allowed_actions, allowed_action_idxs)
+
         return value_head, move_probabilities, allowed_action_idxs, allowed_actions
+
+    def print_action_prob(self, move_probabilities, allowed_actions, allowed_action_idxs):
+        print("move probabilites: ", move_probabilities)
+        print("allowed actions: ", allowed_actions)
+        print("allowed actions idx: ", allowed_action_idxs)
+        print("--------------")
+        for i, idx in enumerate(allowed_action_idxs):
+            print("Move: ", allowed_actions[i])
+            print("prob: ", move_probabilities[idx])
+            print("-----------")
 
     ####
     #

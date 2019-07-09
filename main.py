@@ -70,12 +70,13 @@ def main():
     model._make_predict_function()
 
     # Add to agents if you want to have a random model
-    rand_model = nni.load_nn("")
-    rand_model._make_predict_function()
+    # print("loading")
+    # model_rand = nni.load_nn("")
+    # model_rand._make_predict_function()
 
-    writer = tf.summary.FileWriter(logdir='logdir',
-                                   graph=tf.get_default_graph())
-    writer.flush()
+    # writer = tf.summary.FileWriter(logdir='logdir',
+    #                               graph=tf.get_default_graph())
+    # writer.flush()
 
     # If we want to learn instead of playing
     if local_training_mode:
