@@ -117,13 +117,17 @@ if __name__ == "__main__":
     position = ""
     game_id = "gameid"
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 4:
+        mode = str(sys.argv[1])
+        start_server = int(sys.argv[2])
+        port = str(sys.argv[3])
+    if len(sys.argv) == 5:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
         port = str(sys.argv[3])
         game_id = str(sys.argv[4])
     if len(sys.argv) == 6:
-        position = f"?{str(sys.argv[5])}=\""
+        position = f"?{str(sys.argv[5])}="
 
     server_address = f"ws://localhost:{port}/websocketclient{position}"
     main(mode, start_server, server_address)
