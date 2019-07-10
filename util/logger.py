@@ -30,7 +30,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 # SET all LOGGER_DISABLED to True to disable logging
 # WARNING: the mcts logs file gets big quite quickly
 LOGGER_DISABLED = {
-    'main': False, 'memory': False, 'tourney': False, 'mcts': False, 'model': False}
+    'main': False, 'memory': False, 'tourney': False, 'mcts': True, 'model': False}
 
 
 logger_mcts = setup_logger('logger_mcts', run_folder + 'logs/logger_mcts.logs')

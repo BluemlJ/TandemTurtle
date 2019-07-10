@@ -26,7 +26,7 @@ else
       echo "Already up to date."
 fi
 
-echo "----------Removing chess folder in TandemTurtle"
+echo "----------Removing chess folder in tinyChessServer"
 rm -r backend/chess #new chess folder comes from python chess (see below)
 
 

@@ -87,22 +87,23 @@ class MCTS:
                 parent_visits = parent_visits + edge.stats['node_visits']
 
             for idx, (action, edge) in enumerate(currentNode.edges):
+                if edge not in breadcrumbs:
 
-                # UCT = Q+U
-                U = self.cpuct * edge.stats['action_probability'] * \
-                    np.sqrt(parent_visits / (1 + edge.stats['node_visits']))
-                Q = edge.stats['node_average_evaluation']
+                    # UCT = Q+U
+                    U = self.cpuct * edge.stats['action_probability'] * \
+                        np.sqrt((1 + parent_visits) / (1 + edge.stats['node_visits']))
+                    Q = edge.stats['node_average_evaluation']
 
-                lg.logger_mcts.info(
-                    'action: %s ... node_visits = %d, action_probability = %f, node_total_evaluation = %f, node_average_evaluation = %f, U = %f, Q+U = %f',
-                    action,
-                    edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6),
-                    np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
+                    lg.logger_mcts.info(
+                        'action: %s ... node_visits = %d, action_probability = %f, node_total_evaluation = %f, node_average_evaluation = %f, U = %f, Q+U = %f',
+                        action,
+                        edge.stats['node_visits'], np.round(edge.stats['action_probability'], 6),
+                        np.round(edge.stats['node_total_evaluation'], 6), np.round(Q, 6), np.round(U, 6), np.round(Q + U, 6))
 
-                if Q + U > maxQU:
-                    maxQU = Q + U
-                    action_maxQU = action
-                    edge_maxQU = edge
+                    if Q + U > maxQU:
+                        maxQU = Q + U
+                        action_maxQU = action
+                        edge_maxQU = edge
 
             lg.logger_mcts.info('action with highest Q + U...%s', action_maxQU)
 
