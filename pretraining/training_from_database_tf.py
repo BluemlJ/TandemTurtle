@@ -23,8 +23,6 @@ def train(model):
     model.load_data()
 
     # set up and print layer structure
-    print("Creating model")
-    model.create_network()
     print(model.model.summary())
 
     # Compile model
@@ -162,6 +160,8 @@ def main():
             path = "/content/" + path
         print("Restore Checkpoint from ", path)
         network.model = load_pretrained(path)
+    else:
+        network.model.create_network()
 
     train(network)
     exit()

@@ -12,10 +12,9 @@ def load_nn(path_to_nn=""):
     else:
         path = os.getcwd()
         print("Load nn from ", path + path_to_nn)
-        nn = NeuralNetwork()
-        nn.model = load_model(path + path_to_nn,
-                              custom_objects={'sign_metric': sign_metric})
-        model = nn.model
+        model = load_model(path + path_to_nn,
+                           custom_objects={'sign_metric': sign_metric})
+
     return model
 
 

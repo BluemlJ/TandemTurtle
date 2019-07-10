@@ -21,7 +21,7 @@ class Agent():
     # model - the neural net. Not used in simple agent, but kept here for the purpose of later extension
     # interface - function to be called for xboard output commands
     ##########
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model, interface):
+    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model, interface, graph):
         self.name = name
 
         self.state_size = state_size
@@ -34,6 +34,9 @@ class Agent():
 
         # mcts saves tree info and statistics.
         self.mcts = None
+
+        # save graph for model.predict
+        self.graph = graph
 
         self.interface = interface
 
@@ -126,7 +129,7 @@ class Agent():
 
         return best_move
 
-    def get_preds(self, state):
+    def get_preds(self, state, temperature=1):
         # predict the leaf
         board = state.board
         partner_board = state.partner_board
@@ -136,9 +139,17 @@ class Agent():
         x2 = input_representation.board_to_planes(partner_board)
         x2 = np.expand_dims(x2, axis=0)
 
-        input_to_model = [x1, x2]
+        inputs = {"input_1": x1, "input_2": x2}
 
-        predictions = self.model.predict(input_to_model)
+        # Set graph and load varialbes so model predict will work
+        with self.graph.as_default():
+            import tensorflow as tf
+            from tensorflow.keras.backend import get_session
+            get_session().run(tf.global_variables_initializer())
+            get_session().run(tf.local_variables_initializer())
+
+            predictions = self.model.predict(inputs)
+
         # value head should be one value to say how good my state is
         value_head = predictions[0]
         # policy head gives a 2272 big vector with prob for each state
@@ -151,8 +162,9 @@ class Agent():
         mask[allowed_action_idxs] = False
         policy_head[mask] = -100
 
-        odds = np.exp(policy_head)
+        # TODO problem for too high policy head...
         # TODO add temperature
+        odds = np.exp(policy_head/temperature)
         move_probabilities = odds / np.sum(odds)
 
         allowed_actions = [output_representation.policy_idx_to_move
@@ -160,7 +172,6 @@ class Agent():
 
         # Enable to print action prob
         # self.print_action_prob(move_probabilities, allowed_actions, allowed_action_idxs)
-
         return value_head, move_probabilities, allowed_action_idxs, allowed_actions
 
     def print_action_prob(self, move_probabilities, allowed_actions, allowed_action_idxs):
