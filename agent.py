@@ -145,9 +145,9 @@ class Agent():
         # Set graph and load varialbes so model predict will work
         with self.graph.as_default():
             import tensorflow as tf
-            from tensorflow.keras.backend import get_session
-            get_session().run(tf.global_variables_initializer())
-            get_session().run(tf.local_variables_initializer())
+            from tensorflow.compat.v1.keras.backend import get_session
+            get_session().run(tf.compat.v1.global_variables_initializer())
+            get_session().run(tf.compat.v1.local_variables_initializer())
 
             predictions = self.model.predict(inputs)
 
