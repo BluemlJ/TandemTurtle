@@ -36,14 +36,14 @@ ASCII-Art: Joan Stark
 """
 
 
-def create_and_run_agent(name, env, model, interfaceType="websocket", server_address="ws://localhost:8080/websocketclient"):
+def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address="ws://localhost:8080/websocketclient"):
     interface = XBoardInterface(name, interfaceType, server_address)
-    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface)
+    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, graph)
 
     while not interface.gameStarted:
         sleep(0.1)
 
-    game_play.play_websocket_game(agent1, lg.logger_main, interface, turns_with_high_noise=config.TURNS_WITH_HIGH_NOISE)
+    game_play.play_websocket_game(agent1, lg.logger_main, interface, config.TURNS_WITH_HIGH_NOISE)
 
 
 def main(agent_threads, start_server, server_address, game_id):
@@ -53,8 +53,17 @@ def main(agent_threads, start_server, server_address, game_id):
 
     env = Game(0)
 
-    if config.INITIAL_MODEL_PATH:
-        model = nni.load_nn(config.INITIAL_MODEL_PATH)
+    # tf.reset_default_graph()
+    # if config.INITIAL_MODEL_PATH:
+    print("Loading models")
+    graphs = [tf.Graph(), tf.Graph(), tf.Graph(), tf.Graph()]
+    models = []
+
+    for graph in graphs:
+        with graph.as_default():
+            models.append(nni.load_nn(config.INITIAL_MODEL_PATH))
+
+    print("Finished loading")
 
     # Add to agents if you want to have a random model #
     # print("loading")
@@ -71,23 +80,33 @@ def main(agent_threads, start_server, server_address, game_id):
         nni.save_nn(f"run/models/{version}", new_best_model)
 
     #### If the server is running, create clients as threads and connect them to the websocket interface ####
-    else:
-        if config.SERVER_AUTOSTART:
+    elif agent_threads != -1:
+        if start_server:
             if agent_threads == 2:
                 os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
             if agent_threads == 4:
                 os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
-            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
-            sleep(5)
 
-        for i in range(0, agent_threads):
-            name = "TandemTurtle"
-            if agent_threads > 1:
-                name = "Agent " + str(i)
-            _thread.start_new_thread(create_and_run_agent, (name, env, model, "websocket", server_address))
+        else:
+            for i in range(0, agent_threads):
+                name = "TandemTurtle"
+                if agent_threads > 1:
+                    name = "Agent " + str(i)
+                _thread.start_new_thread(create_and_run_agent, (name, env, models[i], graphs[i], "websocket", server_address))
 
         while True:
             sleep(10)
+
+    elif agent_threads == -1:
+        player = Agent("MisterTester", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, models[0], None)
+
+        state = env.reset()
+
+        action = player.act_nn(state, 0)
+        print("You did it: ", action)
+
+    else:
+        raise NameError(f" Name: {mode} not existing")
 
 
 if __name__ == "__main__":
@@ -120,5 +139,7 @@ if __name__ == "__main__":
         agent_threads = 1
     if mode == "selfplay":
         agent_threads = 0
+    if mode == "test_model":
+        agent_threads = -1
 
     main(agent_threads, start_server, server_address, game_id)
