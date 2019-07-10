@@ -42,7 +42,7 @@ class XBoardInterface():
             self.isMyTurn = False
             if self.color is None:
                 self.color = 'black'
-        if "move" in message and "pmove" not in message:
+        if "move" in message and "pmove" not in message and "Illegal" not in message:
             self.lastMove = self.stripMessage(message)
             self.isMyTurn = not self.isMyTurn
         if "pmove" in message:
