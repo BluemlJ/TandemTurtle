@@ -303,7 +303,7 @@ class Agent():
         time.sleep(1.0)
         """
         print('\n')
-        self.model.printWeightAverages()
+        # self.model.printWeightAverages()
 
     def build_mcts(self, state):
 

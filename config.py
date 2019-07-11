@@ -11,9 +11,9 @@ INITIAL_MODEL_PATH = "/run/models/best_model_10_res"
 # Main / Gamemode Options
 GAME_AGENT_THREADS = 4  # 0 for selfplay, 4 for playing against itself, 2 for sjeng, 1 for single-player
 SERVER_AUTOSTART = 0
-SERVER_PORT = "8080"
-SERVER_WEBSOCKET_POSITION = ""
+SERVER_ADDRESS = "ws://localhost:8080/websocketclient"
 GAMEID = "gameid"
+TOURNAMENTID = "tournamentid"
 
 # MCTS
 RUN_ON_NN_ONLY = False

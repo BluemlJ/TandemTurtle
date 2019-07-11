@@ -46,7 +46,7 @@ def create_and_run_agent(name, env, model, graph, interfaceType="websocket", ser
     game_play.play_websocket_game(agent1, lg.logger_main, interface, config.TURNS_WITH_HIGH_NOISE)
 
 
-def main(agent_threads, start_server, server_address, game_id):
+def main(agent_threads, start_server, server_address):
 
     # print(intro_message)
     # np.set_printoptions(suppress=True)
@@ -87,6 +87,8 @@ def main(agent_threads, start_server, server_address, game_id):
             if agent_threads == 4:
                 os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
 
+            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+
         else:
             for i in range(0, agent_threads):
                 name = "TandemTurtle"
@@ -112,24 +114,22 @@ def main(agent_threads, start_server, server_address, game_id):
 if __name__ == "__main__":
     agent_threads = config.GAME_AGENT_THREADS
     start_server = config.SERVER_AUTOSTART
-    port = config.SERVER_PORT
+    server_address = config.SERVER_ADDRESS
     position = config.SERVER_WEBSOCKET_POSITION
     game_id = config.GAMEID
+    tournament_id = config.TOURNAMENTID
 
     mode = ''
     if len(sys.argv) == 4:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
-        port = str(sys.argv[3])
-    if len(sys.argv) == 5:
+        server_address = str(sys.argv[3])
+    if len(sys.argv) == 6:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
-        port = str(sys.argv[3])
+        server_address = str(sys.argv[3])
         game_id = str(sys.argv[4])
-    if len(sys.argv) == 6:
-        position = f"?{str(sys.argv[5])}="
-
-    server_address = f"ws://localhost:{port}/websocketclient{position}"
+        tournament_id = str(sys.argv[5])
 
     if mode == "auto-4":
         agent_threads = 4
@@ -142,4 +142,4 @@ if __name__ == "__main__":
     if mode == "test_model":
         agent_threads = -1
 
-    main(agent_threads, start_server, server_address, game_id)
+    main(agent_threads, start_server, server_address)
