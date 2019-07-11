@@ -115,8 +115,8 @@ def main(agent_threads, start_server, server_address):
 
 if __name__ == "__main__":
 
-    config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.45
+    c = tf.ConfigProto()
+    c.gpu_options.per_process_gpu_memory_fraction = 0.45
 
     agent_threads = config.GAME_AGENT_THREADS
     start_server = config.SERVER_AUTOSTART
