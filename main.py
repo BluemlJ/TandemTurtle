@@ -56,7 +56,9 @@ def main(agent_threads, start_server, server_address):
     # tf.reset_default_graph()
     # if config.INITIAL_MODEL_PATH:
     print("Loading models")
-    graphs = [tf.Graph(), tf.Graph(), tf.Graph(), tf.Graph()]
+    graphs = []
+    for i in range(agent_threads):
+        graphs.append(tf.Graph())
     models = []
 
     for graph in graphs:
@@ -112,10 +114,13 @@ def main(agent_threads, start_server, server_address):
 
 
 if __name__ == "__main__":
+
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = 0.45
+
     agent_threads = config.GAME_AGENT_THREADS
     start_server = config.SERVER_AUTOSTART
     server_address = config.SERVER_ADDRESS
-    position = config.SERVER_WEBSOCKET_POSITION
     game_id = config.GAMEID
     tournament_id = config.TOURNAMENTID
 

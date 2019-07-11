@@ -51,7 +51,7 @@ class Edge:
         self.stats = {
             'node_visits': 0,
             'node_total_evaluation': 0,
-            'node_average_evaluation': -1,
+            'node_average_evaluation': 0,
             'action_probability': prior,
         }
 
@@ -82,7 +82,7 @@ class MCTS:
 
             maxQU = -99999
 
-            parent_visits = 0
+            parent_visits = 1
             for action, edge in currentNode.edges:
                 parent_visits = parent_visits + edge.stats['node_visits']
 
@@ -91,7 +91,7 @@ class MCTS:
 
                     # UCT = Q+U
                     U = self.cpuct * edge.stats['action_probability'] * \
-                        np.sqrt((1 + parent_visits) / (1 + edge.stats['node_visits']))
+                        np.sqrt((parent_visits) / (1 + edge.stats['node_visits']))
                     Q = edge.stats['node_average_evaluation']
 
                     lg.logger_mcts.info(

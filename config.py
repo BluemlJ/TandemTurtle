@@ -16,7 +16,7 @@ GAMEID = "gameid"
 TOURNAMENTID = "tournamentid"
 
 # MCTS
-RUN_ON_NN_ONLY = False
+RUN_ON_NN_ONLY = True
 
 # SELF PLAY
 EPISODES = 30
