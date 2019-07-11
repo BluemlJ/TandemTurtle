@@ -136,6 +136,7 @@ if __name__ == "__main__":
         game_id = str(sys.argv[4])
         tournament_id = str(sys.argv[5])
 
+    print("------------------------------------", mode)
     if mode == "auto-4":
         agent_threads = 4
     if mode == "2vsSjeng":

@@ -90,4 +90,6 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise):
         # i.e. -1 if the previous player played a winning move
 
     print(f"[{player.name}] Game finished!")
-    env.reset()
+    import os
+    import sys
+    os.execl(sys.executable, sys.executable, *sys.argv)
