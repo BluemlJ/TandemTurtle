@@ -36,7 +36,7 @@ ASCII-Art: Joan Stark
 """
 
 
-def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address="ws://localhost:8080/websocketclient"):
+def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address=""):
     interface = XBoardInterface(name, interfaceType, server_address)
     agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, graph)
 
