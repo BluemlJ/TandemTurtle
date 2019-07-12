@@ -123,7 +123,7 @@ def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/webs
             sleep(10)
 
     elif mode == "test_model":
-        player = Agent("MisterTester", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, None)
+        player = Agent("MisterTester", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model1, None, graph1)
 
         state = env.reset()
 
