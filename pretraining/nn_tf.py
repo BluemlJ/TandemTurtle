@@ -2,24 +2,38 @@
 Neural Network architecture we use for training and playing
 on the magnificent Bughouse chess game
 """
-import numpy as np
-# from keras.optimizers import adam  # , SGD
-from tensorflow import keras
-import tensorflow as tf
-from tensorflow.keras import regularizers
-from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
-from tensorflow.keras.models import Model
-from math import ceil
-import keras.backend as K
+
+
+if True:
+    import tensorflow as tf
+    from tensorflow.keras import regularizers
+    from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
+    from tensorflow.keras.models import Model
+    from math import ceil
+    import tensorflow.keras.backend as K
+
+else:
+    import numpy as np
+    import tensorflow as tf
+    from keras import regularizers
+    from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
+    from keras.models import Model
+    from math import ceil
+    import keras.backend as K
+
+
 
 if __name__ == "pretraining.nn_tf":
     # Check if module is called from main
     import pretraining.config_training as cf
     import pretraining.load_datasets as load_datasets
+
+    from pretraining.data_generator import generate_value_policy_batch, num_samples
 elif __name__ == "nn_tf":
     # Check if module is called from main
     import load_datasets
     import config_training as cf
+    from data_generator import generate_value_policy_batch, num_samples
 else:
     raise ImportError(f"Name: {__name__} not found")
 
@@ -57,15 +71,17 @@ class NeuralNetwork:
         self.train_data_generator = train
         self.validation_data_generator = val
         self.test_data_generator = test
-        iter = train.make_initializable_iterator()
-        el = iter.get_next()
-        with tf.Session() as sess:
-            sess.run(iter.initializer)
-            x = sess.run(el)
-            print(x[0]['input_1'].shape)
-            print(x[0]['input_2'].shape)
-            print(x[1]['value_head'].shape)
-            print(x[1]['policy_head'].shape)
+
+        # iter = train.make_initializable_iterator()
+        # el = iter.get_next()
+        if False:
+            with tf.Session() as sess:
+                sess.run(iter.initializer)
+                x = sess.run(el)
+                print(x[0]['input_1'].shape)
+                print(x[0]['input_2'].shape)
+                print(x[1]['value_head'].shape)
+                print(x[1]['policy_head'].shape)
         if cf.TEST_MODE:
             print("\n\n\n --------------------------------------- \n")
             print("RUNNING IN TEST MODE")
@@ -78,8 +94,13 @@ class NeuralNetwork:
             self.n_val = ceil(val_size / cf.BATCH_SIZE)
             self.n_test = ceil(test_size / cf.BATCH_SIZE)
 
+            # self.n_train = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.train") / cf.BATCH_SIZE)
+            # self.n_val = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.validation") / cf.BATCH_SIZE)
+            # self.n_test = ceil(num_samples(cf.GDRIVE_FOLDER + "data/result.test") / cf.BATCH_SIZE)
+
+
     def create_network(self):
-        keras.backend.set_image_data_format('channels_last')
+        K.set_image_data_format('channels_last')
         # create input
         board_input = Input(shape=self.in_dim)
 

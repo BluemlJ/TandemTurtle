@@ -5,16 +5,16 @@
 
 POSITION=''
 
-while getopts port:id:position: option; do
+while getopts address:tid:gid: option; do
     case "${option}" in
-        port)
-            PORT=${OPTARG};;
-        id)
-            ID=${OPTARG};;
-        position)
-            POSITION=${OPTARG};;
+        address)
+            ADDRESS=${OPTARG};;
+        tid)
+            TID=${OPTARG};;
+        gid)
+            GID=${OPTARG};;
     esac
 done
 
 # start our Agent
-python main.py single_agent 0 $PORT $ID $POSITION
+python main.py single_agent 0 $ADDRESS $TID $GID

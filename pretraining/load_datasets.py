@@ -34,7 +34,7 @@ def tfdata(dataset, batch_size, is_training):
     return dataset
 
 
-def load_data(batch_size, path="data/data.csv.gz"):
+def load_data(batch_size, path="data/data_filtered.csv.gz"):
     n_samples = 0
     if cf.N_SAMPLES == None:
         print("counting samples")
@@ -52,6 +52,9 @@ def load_data(batch_size, path="data/data.csv.gz"):
     train_size = int(0.8 * n_samples)
     val_size = int(0.10 * n_samples)
     test_size = int(0.10 * n_samples)
+
+    assert train_size + val_size + test_size <= n_samples
+
     full_dataset = full_dataset.shuffle(cf.SHUFFLE_BUFFER_SIZE, seed=42)
     train_dataset = full_dataset.take(train_size)
     test_dataset = full_dataset.skip(train_size)
@@ -63,7 +66,7 @@ def load_data(batch_size, path="data/data.csv.gz"):
     return train, val, test, train_size, val_size, test_size
 
 
-def data_generator_processed(path=cf.GDRIVE_FOLDER + "data/data.csv.gz", both_boards=True):
+def data_generator_processed(path=cf.GDRIVE_FOLDER + "data/data_filtered.csv.gz", both_boards=True):
     with gzip.open(path, 'rt') as f:
         reader = csv.reader(f, delimiter=';')
         for row in reader:
@@ -85,12 +88,10 @@ def data_generator_processed(path=cf.GDRIVE_FOLDER + "data/data.csv.gz", both_bo
             y = np.array(int(result))
             y2 = output_representation.move_to_policy(move, is_white_to_move=board.turn)
             x1 = input_representation.board_to_planes(board)
-            x1 = np.moveaxis(x1, 0, 2)
             if both_boards:
                 x2 = input_representation.board_to_planes(partner_board)
                 # change channels first to channels last format
 
-                x2 = np.moveaxis(x2, 0, 2)
                 yield ({'input_1': x1, 'input_2': x2}, {'value_head': y, 'policy_head': y2})
             else:
                 yield ({'input_1': x1}, {'value_head': y, 'policy_head': y2})

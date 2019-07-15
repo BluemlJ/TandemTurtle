@@ -10,6 +10,7 @@ from game import input_representation, output_representation
 from util import logger as lg
 import config
 
+
 class Agent():
     ##########
     # param:
@@ -129,6 +130,17 @@ class Agent():
 
         return best_move
 
+    def act_random(self, state):
+        """
+        Returns random allowed action given current state
+        :param state:
+        :return:
+        """
+        allowed_actions = state.allowedActions
+        rand_act = np.random.choice(len(allowed_actions))
+
+        return allowed_actions[rand_act]
+
     def get_preds(self, state, temperature=1):
         # predict the leaf
         board = state.board
@@ -142,13 +154,16 @@ class Agent():
         inputs = {"input_1": x1, "input_2": x2}
 
         # Set graph and load varialbes so model predict will work
-        with self.graph.as_default():
-            import tensorflow as tf
-            from tensorflow.keras.backend import get_session
-            get_session().run(tf.global_variables_initializer())
-            get_session().run(tf.local_variables_initializer())
-
+        if self.graph == 1:
             predictions = self.model.predict(inputs)
+        else:
+            with self.graph.as_default():
+                # import tensorflow as tf
+                # from tensorflow.compat.v1.keras.backend import get_session
+                # get_session().run(tf.compat.v1.global_variables_initializer())
+                # get_session().run(tf.compat.v1.local_variables_initializer())
+
+                predictions = self.model.predict(inputs)
 
         # value head should be one value to say how good my state is
         value_head = predictions[0]
@@ -164,7 +179,7 @@ class Agent():
 
         # TODO problem for too high policy head...
         # TODO add temperature
-        odds = np.exp(policy_head/temperature)
+        odds = np.exp(policy_head / temperature)
         move_probabilities = odds / np.sum(odds)
 
         allowed_actions = [output_representation.policy_idx_to_move
@@ -302,7 +317,7 @@ class Agent():
         time.sleep(1.0)
         """
         print('\n')
-        self.model.printWeightAverages()
+        # self.model.printWeightAverages()
 
     def build_mcts(self, state):
 

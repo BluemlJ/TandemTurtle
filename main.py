@@ -1,21 +1,20 @@
-from shutil import copyfile
 import subprocess
 import os
+import sys
 import signal
 import _thread
+import numpy as np
+import tensorflow as tf
 from time import sleep
+
 from agent import Agent
 import config
-from util import logger as lg
 import game_play
 from game.game import Game
-import numpy as np
-from util.xboardInterface import XBoardInterface
-import tensorflow as tf
 from self_play_training import self_play
 import util.nn_interface as nni
-import threading
-import sys
+from util import logger as lg
+from util.xboardInterface import XBoardInterface
 
 # intro_message =\
 """
@@ -37,7 +36,18 @@ ASCII-Art: Joan Stark
 """
 
 
-def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address="ws://localhost:8080/websocketclient"):
+def create_and_run_random(name, env, interfaceType="websocket", server_address=""):
+    interface = XBoardInterface(name, interfaceType, server_address)
+    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, None, interface, None)
+
+    while not interface.gameStarted:
+        sleep(0.1)
+
+    game_play.play_websocket_game(agent1, lg.logger_main, interface,
+                                  config.TURNS_WITH_HIGH_NOISE, is_random=True)
+
+
+def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address=""):
     interface = XBoardInterface(name, interfaceType, server_address)
     agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, graph)
 
@@ -47,111 +57,111 @@ def create_and_run_agent(name, env, model, graph, interfaceType="websocket", ser
     game_play.play_websocket_game(agent1, lg.logger_main, interface, config.TURNS_WITH_HIGH_NOISE)
 
 
-def main(mode='auto-4', start_server=1, server_address="ws://localhost:8080/websocketclient", game_id=""):
-    # graph = tf.Graph()
+def main(agent_threads, start_server, server_address):
 
     # print(intro_message)
     # np.set_printoptions(suppress=True)
-     # TODO created twice why not give as parameter
-    env = Game(0)
 
-    # try to find out if server is running
+    env = Game(0)
 
     # tf.reset_default_graph()
     # if config.INITIAL_MODEL_PATH:
     print("Loading models")
-    graph1 = tf.Graph()
-    with graph1.as_default():
-        model1 = nni.load_nn(config.INITIAL_MODEL_PATH)
 
-    graph2 = tf.Graph()
-    with graph2.as_default():
-        model2 = nni.load_nn(config.INITIAL_MODEL_PATH)
+    graphs = []
+    for i in range(agent_threads):
+        graphs.append(tf.Graph())
+    models = []
 
-    graph3 = tf.Graph()
-    with graph3.as_default():
-        model3 = nni.load_nn(config.INITIAL_MODEL_PATH)
+    for graph in graphs:
+        with graph.as_default():
+            models.append(nni.load_nn(config.INITIAL_MODEL_PATH))
+            # models.append(nni.load_nn())
 
-    graph4 = tf.Graph()
-    with graph4.as_default():
-        model4 = nni.load_nn(config.INITIAL_MODEL_PATH)
+    if agent_threads == -1:
+        models = nni.load_nn(config.INITIAL_MODEL_PATH)
     print("Finished loading")
 
-    # Add to agents if you want to have a random model
-    # print("loading")
-    # model_rand = nni.load_nn("")
-    # model_rand._make_predict_function()
-
-    # If we want to learn instead of playing (NOT FINISHED)
-    if mode == "selfplay":
+    #### If we want to learn instead of playing (NOT FINISHED) ####
+    if agent_threads == 0:
         new_best_model, version = self_play(env)
         nni.save_nn(f"run/models/{version}", new_best_model)
 
-    #### If the server is running, create 4 clients as threads and connect them to the websocket interface ####
-    elif mode == "auto-4":
-
+    #### If the server is running, create clients as threads and connect them to the websocket interface ####
+    elif agent_threads != -1:
         if start_server:
-            os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
-            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
-            sleep(5)
+            if agent_threads == 2:
+                os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
+            if agent_threads == 4:
+                os.popen("cp ../tinyChessServer/config.json.ourEngine4times ../tinyChessServer/config.json", 'r', 1)
 
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", env, model1, graph1, "websocket", server_address))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", env, model2, graph2, "websocket", server_address))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 3", env, model3, graph3, "websocket", server_address))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 4", env, model4, graph4, "websocket", server_address))
+            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
+
+        else:
+            for i in range(0, agent_threads):
+                name = "TandemTurtle"
+                if agent_threads > 1:
+                    name = "Agent " + str(i)
+                _thread.start_new_thread(create_and_run_agent, (name, env, models[i], graphs[i], "websocket", server_address))
+                print("STARTED AGENT ", i)
 
         while True:
             sleep(10)
+    elif agent_threads == -1:
 
-    elif mode == "2vsSjeng":
+        _thread.start_new_thread(create_and_run_agent, ("MisterTester", env, models, None, "websocket", server_address))
+        print("Started mister tester")
 
-        if start_server:
-            os.popen("cp ../tinyChessServer/config.json.sjengVsOur ../tinyChessServer/config.json", 'r', 1)
-            server = subprocess.Popen(["node", "index.js"], cwd="../tinyChessServer", stdout=subprocess.PIPE)
-            sleep(5)
-
-        _thread.start_new_thread(create_and_run_agent, ("Agent 1", env, model, "websocket"))
-        _thread.start_new_thread(create_and_run_agent, ("Agent 2", env, model, "websocket"))
+        for i in range(3):
+            name = f"MRand_{i}"
+            _thread.start_new_thread(create_and_run_random,
+                                     (name, env, "websocket", server_address))
+            print("STARTED AGENT ", i)
 
         while True:
             sleep(10)
-
+    """
     elif mode == "single_agent":
 
-        _thread.start_new_thread(create_and_run_agent, ("TandemTurtle", env, model, "websocket", server_address))
+        _thread.start_new_thread(create_and_run_agent, ("TandemTurtle", env, model[0], "websocket", server_address))
         while True:
             sleep(10)
-
-    elif mode == "test_model":
-        player = Agent("MisterTester", env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model1, None, graph1)
-
-        state = env.reset()
-
-        action = player.act_nn(state, 0)
-        print("You did it: ", action)
-
-    else:
-        raise NameError(f" Name: {mode} not existing")
+    """
 
 
 if __name__ == "__main__":
-    mode = "auto-4"
-    start_server = 1
-    port = "8080"
-    position = ""
-    game_id = "gameid"
 
+    c = tf.ConfigProto()
+    c.gpu_options.per_process_gpu_memory_fraction = 0.45
+
+    agent_threads = config.GAME_AGENT_THREADS
+    start_server = config.SERVER_AUTOSTART
+    server_address = config.SERVER_ADDRESS
+    game_id = config.GAMEID
+    tournament_id = config.TOURNAMENTID
+
+    mode = 'test_model'
     if len(sys.argv) == 4:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
-        port = str(sys.argv[3])
-    if len(sys.argv) == 5:
+        server_address = str(sys.argv[3])
+    if len(sys.argv) == 6:
         mode = str(sys.argv[1])
         start_server = int(sys.argv[2])
-        port = str(sys.argv[3])
+        server_address = str(sys.argv[3])
         game_id = str(sys.argv[4])
-    if len(sys.argv) == 6:
-        position = f"?{str(sys.argv[5])}="
+        tournament_id = str(sys.argv[5])
 
-    server_address = f"ws://localhost:{port}/websocketclient{position}"
-    main(mode, start_server, server_address)
+    print("------------------------------------", mode)
+    if mode == "auto-4":
+        agent_threads = 4
+    if mode == "2vsSjeng":
+        agent_threads = 2
+    if mode == "single_agent":
+        agent_threads = 1
+    if mode == "selfplay":
+        agent_threads = 0
+    if mode == "test_model":
+        agent_threads = -1
+
+    main(agent_threads, start_server, server_address)

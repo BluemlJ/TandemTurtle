@@ -34,7 +34,7 @@ def playMatches(best_model, new_model, EPISODES, turns_until_high_noise, memory=
     return (scores, memory)
 
 
-def play_websocket_game(player, logger, interface, turns_with_high_noise):
+def play_websocket_game(player, logger, interface, turns_with_high_noise, is_random=False):
     while interface.color is None:
         sleep(0.01)
     env = Game(0)
@@ -66,15 +66,18 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise):
         higher_noise = 1 if turn < turns_with_high_noise else 0
 
         # get action, edge_visited_rates, best_average_evaluation, next_state_evaluation
-        if config.RUN_ON_NN_ONLY:
-            action = player.act_nn(state, higher_noise)
-            print("Turn: ", turn)
+        if is_random:
+            action = player.act_random(state)
         else:
-            action, _, _, _ = player.act(state, higher_noise)
-        if player.name == "Agent 1":
-            # Enable to print boards
-            # print(state.boards)
-            pass
+            if config.RUN_ON_NN_ONLY:
+                action = player.act_nn(state, higher_noise)
+                print("Turn: ", turn)
+            else:
+                action, _, _, _ = player.act(state, higher_noise)
+            if player.name == "Agent 1":
+                # Enable to print boards
+                # print(state.boards)
+                pass
 
         # send message
         lg.logger_model.info(f"move {action} was played by {player.name}")
@@ -90,3 +93,6 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise):
         # i.e. -1 if the previous player played a winning move
 
     print(f"[{player.name}] Game finished!")
+    import os
+    import sys
+    os.execl(sys.executable, sys.executable, *sys.argv)

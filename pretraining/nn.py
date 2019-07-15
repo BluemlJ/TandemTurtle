@@ -2,8 +2,12 @@
 Neural Network architecture we use for training and playing
 on the magnificent Bughouse chess game
 """
+
+print("THIS MODEL SHOULD NOT BE USED ANYMORE")
+exit(0)
+
+
 import numpy as np
-# from keras.optimizers import adam  # , SGD
 from keras import regularizers
 from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, concatenate
 from keras.models import Model

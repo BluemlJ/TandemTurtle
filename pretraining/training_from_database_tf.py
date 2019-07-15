@@ -3,21 +3,31 @@ TODO optimize hyperparameters
 TODO NextMove/policy
 TODO shuffle data after every epoch
 """
-import tensorflow as tf
-import numpy as np
-from nn_tf import NeuralNetwork, sign_metric
-from tensorflow.keras.models import load_model
-import config_training as cf
-from keras.callbacks import TensorBoard
-import time
-from keras.optimizers import SGD
+
+if True:
+    import tensorflow as tf
+    import numpy as np
+    from nn_tf import NeuralNetwork, sign_metric
+    from tensorflow.keras.models import load_model
+    import config_training as cf
+    from tensorflow.keras.callbacks import TensorBoard
+    import time
+
+else:
+    import tensorflow as tf
+    import numpy as np
+    from nn_tf import NeuralNetwork, sign_metric
+    from keras.models import load_model
+    import config_training as cf
+    from keras.callbacks import TensorBoard
+    import time
 
 
 def train(model):
     # fix random seed for reproducibility
     np.random.seed(0)
 
-    # load data to X and Y
+   # load data to X and Y
     print("Loading data")
     # remove from here
     model.load_data()
@@ -46,13 +56,16 @@ def train(model):
     # Fit the model
     print("Fitting model")
 
+    # for epoch in range(cf.EPOCHS):
+    #     train_on_batches(model)
+
+
     model.model.fit(model.train_data_generator,
                     steps_per_epoch=model.n_train,
                     epochs=cf.EPOCHS,
                     verbose=1,
                     validation_data=model.validation_data_generator,
                     validation_steps=model.n_val,
-                    use_multiprocessing=True,
                     callbacks=[tensorboard])
 
     # TODO  is this automatically on gpu? cluster
@@ -68,6 +81,23 @@ def load_pretrained(model_path):
     print("Load Model:")
     model = load_model(model_path)
     return model
+
+
+def train_on_batches(model):
+    train_iter = model.train_data_generator.make_initializable_iterator()
+    val_iter = model.validation_data_generator.make_initializable_iterator()
+
+    train_batch = train_iter.get_next()
+    val_batch = val_iter.get_next()
+
+    # TODO:
+    with tf.Session() as sess:
+        sess.run([train_iter.initializer, val_iter.initializer])
+
+        for i in range(5):
+            x, y = sess.run(train_batch)
+            loss = model.model.train_on_batch(x, y)
+            print(loss)
 
 
 def evaluate_model(self):
@@ -135,7 +165,7 @@ def learning_rate(epoch):
     raise NotImplementedError
 
     print("Current Epoch starting at 0?: ", epoch)
-    processed_samples = (epoch-1) * cf.N_SAMPLES
+    processed_samples = (epoch - 1) * cf.N_SAMPLES
 
     if epoch > 20:
         return 0.005
@@ -161,7 +191,7 @@ def main():
         print("Restore Checkpoint from ", path)
         network.model = load_pretrained(path)
     else:
-        network.model.create_network()
+        network.create_network()
 
     train(network)
     exit()
