@@ -35,3 +35,6 @@ cd ../python-chess
 cp -r chess ../TandemTurtle
 cp -r chess ../tinyChessServer/backend/
 
+echo "----------Installing requirements"
+sudo pip install -r ../TandemTurtle/requirements.txt
+
