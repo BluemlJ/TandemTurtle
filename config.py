@@ -16,7 +16,10 @@ GAMEID = "gameid"
 TOURNAMENTID = "tournamentid"
 
 # MCTS
-RUN_ON_NN_ONLY = True
+RUN_ON_NN_ONLY = False
+
+# Random Agent Sleep in seconds
+DELAY_FOR_RANDOM = 3
 
 # SELF PLAY
 EPISODES = 30

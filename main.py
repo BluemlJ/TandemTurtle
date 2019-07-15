@@ -5,6 +5,8 @@ import signal
 import _thread
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.keras.backend import set_session
+
 from time import sleep
 
 from agent import Agent
@@ -64,22 +66,25 @@ def main(agent_threads, start_server, server_address):
 
     env = Game(0)
 
-    # tf.reset_default_graph()
-    # if config.INITIAL_MODEL_PATH:
-    print("Loading models")
-
-    graphs = []
-    for i in range(agent_threads):
-        graphs.append(tf.Graph())
+    models_extra = []
     models = []
 
-    for graph in graphs:
-        with graph.as_default():
-            models.append(nni.load_nn(config.INITIAL_MODEL_PATH))
-            # models.append(nni.load_nn())
-
     if agent_threads == -1:
-        models = nni.load_nn(config.INITIAL_MODEL_PATH)
+        num_models = 1
+    else:
+        num_models = agent_threads
+
+    print(f"Loading {num_models} models")
+    for i in range(num_models):
+        sess = tf.Session()
+        graph = tf.get_default_graph()
+        set_session(sess)
+
+        model = nni.load_nn(config.INITIAL_MODEL_PATH)
+
+        models.append(model)
+        models_extra.append([graph, sess])
+
     print("Finished loading")
 
     #### If we want to learn instead of playing (NOT FINISHED) ####
@@ -102,15 +107,16 @@ def main(agent_threads, start_server, server_address):
                 name = "TandemTurtle"
                 if agent_threads > 1:
                     name = "Agent " + str(i)
-                _thread.start_new_thread(create_and_run_agent, (name, env, models[i], graphs[i], "websocket", server_address))
+                _thread.start_new_thread(create_and_run_agent, (name, env, models[i], models_extra[i], "websocket", server_address))
                 print("STARTED AGENT ", i)
 
         while True:
             sleep(10)
     elif agent_threads == -1:
-
-        _thread.start_new_thread(create_and_run_agent, ("MisterTester", env, models, None, "websocket", server_address))
+        _thread.start_new_thread(create_and_run_agent, ("MisterTester", env, models[0], models_extra[0], "websocket", server_address))
         print("Started mister tester")
+
+        sleep(2)
 
         for i in range(3):
             name = f"MRand_{i}"
@@ -120,13 +126,6 @@ def main(agent_threads, start_server, server_address):
 
         while True:
             sleep(10)
-    """
-    elif mode == "single_agent":
-
-        _thread.start_new_thread(create_and_run_agent, ("TandemTurtle", env, model[0], "websocket", server_address))
-        while True:
-            sleep(10)
-    """
 
 
 if __name__ == "__main__":

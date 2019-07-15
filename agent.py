@@ -9,6 +9,7 @@ import mcts as mc
 from game import input_representation, output_representation
 from util import logger as lg
 import config
+from tensorflow.python.keras.backend import set_session
 
 
 class Agent():
@@ -153,17 +154,9 @@ class Agent():
 
         inputs = {"input_1": x1, "input_2": x2}
 
-        # Set graph and load varialbes so model predict will work
-        if self.graph == 1:
+        with self.graph[0].as_default():
+            set_session(self.graph[1])
             predictions = self.model.predict(inputs)
-        else:
-            with self.graph.as_default():
-                # import tensorflow as tf
-                # from tensorflow.compat.v1.keras.backend import get_session
-                # get_session().run(tf.compat.v1.global_variables_initializer())
-                # get_session().run(tf.compat.v1.local_variables_initializer())
-
-                predictions = self.model.predict(inputs)
 
         # value head should be one value to say how good my state is
         value_head = predictions[0]

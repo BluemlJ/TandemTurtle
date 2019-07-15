@@ -67,6 +67,7 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, is_ran
 
         # get action, edge_visited_rates, best_average_evaluation, next_state_evaluation
         if is_random:
+            sleep(config.DELAY_FOR_RANDOM)
             action = player.act_random(state)
         else:
             if config.RUN_ON_NN_ONLY:
