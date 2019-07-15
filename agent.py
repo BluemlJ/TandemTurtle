@@ -122,6 +122,8 @@ class Agent():
 
         value_head, move_probabilities, allowed_action_idxs, allowed_actions = self.get_preds(state)
         move_probabilities = move_probabilities[allowed_action_idxs]
+        print("move probs: ", move_probabilities)
+
         if deterministic:
             best_move_idx = np.argmax(move_probabilities)
         else:
@@ -142,7 +144,7 @@ class Agent():
 
         return allowed_actions[rand_act]
 
-    def get_preds(self, state, temperature=1):
+    def get_preds(self, state, temperature=0.2):
         # predict the leaf
         board = state.board
         partner_board = state.partner_board
@@ -179,18 +181,20 @@ class Agent():
                            (idx, is_white_to_move=board.turn, board_id=board.board_id) for idx in allowed_action_idxs]
 
         # Enable to print action prob
-        # self.print_action_prob(move_probabilities, allowed_actions, allowed_action_idxs)
+        self.print_action_prob(move_probabilities, allowed_actions, allowed_action_idxs)
         return value_head, move_probabilities, allowed_action_idxs, allowed_actions
 
-    def print_action_prob(self, move_probabilities, allowed_actions, allowed_action_idxs):
-        print("move probabilites: ", move_probabilities)
-        print("allowed actions: ", allowed_actions)
-        print("allowed actions idx: ", allowed_action_idxs)
-        print("--------------")
-        for i, idx in enumerate(allowed_action_idxs):
-            print("Move: ", allowed_actions[i])
-            print("prob: ", move_probabilities[idx])
-            print("-----------")
+    def print_action_prob(self, move_probabilities, allowed_actions, allowed_action_idxs, top_k=5):
+        move_probabilities = move_probabilities[allowed_action_idxs]
+        sorted_probs_idx = np.argsort(move_probabilities)[::-1]
+
+        print(f"Top {top_k} probabilities of allowed moves")
+        print("-------------------------")
+        for i, idx in enumerate(sorted_probs_idx):
+            if i >= top_k:
+                break
+            print(f"Move: probability: {allowed_actions[idx]} : {move_probabilities[idx]:.4f}")
+        print("-------------------------")
 
     ####
     #
