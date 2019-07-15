@@ -49,9 +49,9 @@ def create_and_run_random(name, env, interfaceType="websocket", server_address="
                                   config.TURNS_WITH_HIGH_NOISE, is_random=True)
 
 
-def create_and_run_agent(name, env, model, graph, interfaceType="websocket", server_address=""):
+def create_and_run_agent(name, env, model, model_extra, interfaceType="websocket", server_address=""):
     interface = XBoardInterface(name, interfaceType, server_address)
-    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, graph)
+    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, model_extra)
 
     while not interface.gameStarted:
         sleep(0.1)
@@ -80,7 +80,8 @@ def main(agent_threads, start_server, server_address):
         graph = tf.get_default_graph()
         set_session(sess)
 
-        model = nni.load_nn(config.INITIAL_MODEL_PATH)
+        model = nni.load_nn(config.INITIAL_MODEL_PATH,
+                            save_weights_bool=True, load_weights=True)
 
         models.append(model)
         models_extra.append([graph, sess])

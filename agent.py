@@ -23,7 +23,7 @@ class Agent():
     # model - the neural net. Not used in simple agent, but kept here for the purpose of later extension
     # interface - function to be called for xboard output commands
     ##########
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model, interface, graph):
+    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model, interface, model_extra):
         self.name = name
 
         self.state_size = state_size
@@ -37,8 +37,8 @@ class Agent():
         # mcts saves tree info and statistics.
         self.mcts = None
 
-        # save graph for model.predict
-        self.graph = graph
+        # save model_extra for graph and session for model.predict is: [graph, sess]
+        self.model_extra = model_extra
 
         self.interface = interface
 
@@ -154,8 +154,8 @@ class Agent():
 
         inputs = {"input_1": x1, "input_2": x2}
 
-        with self.graph[0].as_default():
-            set_session(self.graph[1])
+        with self.model_extra[0].as_default():
+            set_session(self.model_extra[1])
             predictions = self.model.predict(inputs)
 
         # value head should be one value to say how good my state is
