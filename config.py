@@ -18,6 +18,10 @@ TOURNAMENTID = "tournamentid"
 # MCTS
 RUN_ON_NN_ONLY = False
 
+# disable logging
+LOGGER_DISABLED = {
+    'main': False, 'memory': False, 'tourney': False, 'mcts': True, 'model': False}
+
 # Random Agent Sleep in seconds
 DELAY_FOR_RANDOM = 3
 

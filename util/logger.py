@@ -5,15 +5,16 @@ Viewing the logs files will help you to understand how the algorithm works and s
 """
 
 import logging
-from config import run_folder
+import config as cf
 import os
+
 
 
 def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     cur_path = os.getcwd()
-    folder_path = run_folder + "/logs"
+    folder_path = cf.run_folder + "/logs"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
@@ -29,10 +30,9 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 # SET all LOGGER_DISABLED to True to disable logging
 # WARNING: the mcts logs file gets big quite quickly
-LOGGER_DISABLED = {
-    'main': False, 'memory': False, 'tourney': False, 'mcts': False, 'model': False}
+LOGGER_DISABLED = cf.LOGGER_DISABLED
 
-
+run_folder = cf.run_folder
 logger_mcts = setup_logger('logger_mcts', run_folder + 'logs/logger_mcts.logs')
 logger_mcts.disabled = LOGGER_DISABLED['mcts']
 
