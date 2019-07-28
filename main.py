@@ -9,7 +9,8 @@ from tensorflow.python.keras.backend import set_session
 
 from time import sleep
 
-from agent import Agent
+#from agent import Agent
+from new_agent import Agent as new_agent
 import config
 import game_play
 from game.game import Game
@@ -62,8 +63,8 @@ def create_and_run_random(name, env, interfaceType="websocket", server_address="
 def create_and_run_agent(name, env, interfaceType="websocket", server_address=""):
     model, model_extra = load_model()
     interface = XBoardInterface(name, interfaceType, server_address)
-    agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, model_extra)
-
+    #agent1 = Agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, model_extra)
+    agent1 = new_agent(name, env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, model, interface, model_extra)
     while not interface.gameStarted:
         sleep(0.1)
 

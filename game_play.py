@@ -39,6 +39,7 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, is_ran
         sleep(0.01)
     env = Game(0)
     state = env.reset()
+    player.build_mcts(state)
     turn = 0
     done = False
 
@@ -53,11 +54,13 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, is_ran
             mv = chess.Move.from_uci(interface.lastMove)
             mv.board_id = 0
             state, value, done, _ = env.step(mv)
+            player.play_move(mv, on_partner_board=False)
             interface.lastMove = ''
             for move in interface.otherMoves:
                 mv = chess.Move.from_uci(move)
                 mv.board_id = 1
                 state.push_action(mv)
+                player.play_move(mv, on_partner_board=True)
             interface.otherMoves = []
 
         interface.logViaInterfaceType(f"[{player.name}] It's my turn!")
@@ -74,7 +77,9 @@ def play_websocket_game(player, logger, interface, turns_with_high_noise, is_ran
                 action = player.act_nn(state, higher_noise)
                 print("Turn: ", turn)
             else:
-                action, _, _, _ = player.act(state, higher_noise)
+                action = player.suggest_move(higher_noise)
+                player.play_move(action, on_partner_board=False)
+                #action, _, _, _ = player.act(state, higher_noise)
             if player.name == "Agent 1":
                 # Enable to print boards
                 # print(state.boards)

@@ -5,7 +5,7 @@
 INITIAL_RUN_NUMBER = None
 INITIAL_MODEL_VERSION = None
 INITIAL_MEMORY_VERSION = None
-INITIAL_MODEL_PATH = "/run/models/best_model_10_res"
+INITIAL_MODEL_PATH = "/run/models/15M"
 
 
 # Main / Gamemode Options
@@ -20,7 +20,7 @@ RUN_ON_NN_ONLY = False
 
 # disable logging
 LOGGER_DISABLED = {
-    'main': False, 'memory': False, 'tourney': False, 'mcts': True, 'model': False}
+    'main': False, 'memory': False, 'tourney': False, 'mcts': False, 'model': False}
 
 # Random Agent Sleep in seconds
 DELAY_FOR_RANDOM = 3
@@ -28,9 +28,14 @@ DELAY_FOR_RANDOM = 3
 # SELF PLAY
 EPISODES = 30
 MCTS_SIMS = 25
+PARALLEL_READOUTS = 8  # Number of searches to execute in parallel. This is also the batch size for neural network evaluation
 MEMORY_SIZE = 30000
 TURNS_WITH_HIGH_NOISE = 10  # turn when the agent starts playing with less noise (less exploration)
 CPUCT = 1.41
+CPUCT_BASE = 19652  # Exploration constants balancing priors vs. value net output
+
+DIRICHLET_ALPHA = 0.03
+DIRICHLET_WEIGHT = 0.25  # 'How much to weight the priors vs. dirichlet noise when mixing'
 
 # RETRAINING
 BATCH_SIZE = 256
