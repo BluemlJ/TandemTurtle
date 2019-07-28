@@ -123,7 +123,7 @@ class Agent():
 
             # if game is over, override the value estimate with the true score
             if leaf.is_done():
-                value = 1 if leaf.state.value > 0 else -1
+                value = 1 if leaf.state.value[0] > 0 else -1
                 leaf.backup_value(value, up_to=self.root)
                 continue
             leaf.add_virtual_loss(up_to=self.root)
