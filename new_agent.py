@@ -171,9 +171,23 @@ class Agent():
         :return: best single move
         """
 
-        value_head, move_probabilities, allowed_action_idxs, allowed_actions = self.get_preds(state)
+        prob, value_head = self.get_preds([state])
+
+        policy_head = prob[0]
+
+        allowed_action_idxs = [output_representation.move_to_policy_idx
+                               (move, is_white_to_move=state.board.turn) for move in state.allowedActions]
+
+        mask = np.ones(policy_head.shape, dtype=bool)
+        mask[allowed_action_idxs] = False
+        policy_head[mask] = -100
+
+        odds = np.exp(policy_head / config.TEMPERATURE)
+        move_probabilities = odds / np.sum(odds)
+
+        allowed_actions = [output_representation.policy_idx_to_move
+                           (idx, is_white_to_move=state.board.turn, board_id=state.board.board_id) for idx in allowed_action_idxs]
         move_probabilities = move_probabilities[allowed_action_idxs]
-        print("move probs: ", move_probabilities)
 
         if deterministic:
             best_move_idx = np.argmax(move_probabilities)
