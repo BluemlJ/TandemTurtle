@@ -28,6 +28,7 @@ DELAY_FOR_RANDOM = 3
 # SELF PLAY
 EPISODES = 30
 MCTS_SIMS = 25
+LOW_TIME_THRESHOLD = 10  # time left in seconds when the agent shoud start playing fast(using only policy)
 PARALLEL_READOUTS = 8  # Number of searches to execute in parallel. This is also the batch size for neural network evaluation
 MEMORY_SIZE = 30000
 TURNS_WITH_HIGH_NOISE = 10  # turn when the agent starts playing with less noise (less exploration)
@@ -36,6 +37,7 @@ CPUCT_BASE = 19652  # Exploration constants balancing priors vs. value net outpu
 
 DIRICHLET_ALPHA = 0.03
 DIRICHLET_WEIGHT = 0.25  # 'How much to weight the priors vs. dirichlet noise when mixing'
+TEMPERATURE = 0.2
 
 # RETRAINING
 BATCH_SIZE = 256

@@ -217,7 +217,7 @@ class MCTSNode(object):
         """
         probs = self.child_N
         if squash:
-            probs = probs ** .98
+            probs = probs ** (1 - cf.TEMPERATURE)
         sum_probs = np.sum(probs)
         if sum_probs == 0:
             return probs
