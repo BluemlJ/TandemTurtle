@@ -30,7 +30,7 @@ class XBoardInterface():
     def _handleServerMessage(self, message):
         self.logViaInterfaceType("[received]" + str(message))
         if message == "protover 4":
-            self.sendViaInterfaceType("feature san=1, time=1, variants=\"bughouse\", myname==\"TandemTurtle\", otherboard=1, colors=1, time=1, done=1")
+            self.sendViaInterfaceType("feature san=1, variants=\"bughouse\", myname=\"TandemTurtle\", otherboard=1, colors=1, time=1, done=1")
 
         if message == "go":
             self.gameStarted = True
