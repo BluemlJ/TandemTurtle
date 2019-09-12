@@ -21,14 +21,20 @@ def find_files(in_dir="../database_extraction/data/"):
 
 
 def statistics(files):
+    times = []
+    elos = []
+    averageElos = []
+    averageElo = 0
+    playersWithElo = 0
+    n_aborted = 0
+    n_checkmated = 0
+    n_draw = 0
+    n_time = 0
+    lost_connection = 0
+
     for file in files:
         with codecs.open(file, encoding="utf-8-sig", errors='ignore') as f:
 
-            times = []
-            elos = []
-            averageElos = []
-            averageElo = 0
-            playersWithElo = 0
             for i, line in enumerate(f):
                 if "Elo" in line:
                     elo = ''.join(x for x in line.split()[-1] if x.isdigit())
@@ -46,6 +52,18 @@ def statistics(files):
                         averageElos.append(averageElo)
                         averageElo = 0
                         playersWithElo = 0
+
+                if "Game aborted" in line:
+                    n_aborted += 1
+                if "checkmated" in line:
+                    n_checkmated += 1
+                if "forfeits on time" in line:
+                    n_time += 1
+                if 'Result "1/2-1/2"' in line:
+                    n_draw += 1
+                if "lost connection" in line:
+                    lost_connection += 1
+
     average = np.mean(elos)
     print("average elo:", average)
 
@@ -60,6 +78,11 @@ def statistics(files):
     print("90 percentile", pa_90)
 
     print("n games", len(averageElos))
+    print("lost on time: ", n_time)
+    print("checkmates: ", n_checkmated)
+    print("draws: ", n_draw)
+    print("aborted: ", n_aborted)
+    print("connection lost: ", lost_connection)
     return averageElos, elos, times
 
 
@@ -156,4 +179,6 @@ def create_dataset(in_dir="../database_extraction/data/", out_dir="data/", perce
     writProc.join()
 
 
+files = find_files("../database_extraction/data/")
+# statistics(files)
 create_dataset()

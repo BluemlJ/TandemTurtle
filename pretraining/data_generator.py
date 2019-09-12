@@ -1,7 +1,11 @@
 """
+DEPRECATED!!! use create_dataset.py and load_dataset.py
 Generator functions for use with keras fit_generator
 """
 # import input_representation, output_representation
+from chess.variant import BughouseBoards
+import chess
+from game import input_representation, output_representation
 import numpy as np
 import sys
 import time
@@ -10,10 +14,6 @@ import os
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-
-from game import input_representation, output_representation
-import chess
-from chess.variant import BughouseBoards
 
 
 def generate_value_sample(path_positions, path_results, path_nextMove, both_boards):

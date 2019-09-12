@@ -1,0 +1,11 @@
+average elo: 1833.5751684949528
+80 percentile 2130.0
+90 percentile 2275.0
+80 percentile 2072.25
+90 percentile 2182.25
+n games 3633975
+lost on time:  461561
+checkmates:  2089326
+draws:  10956
+aborted:  389587
+connection lost:  38704

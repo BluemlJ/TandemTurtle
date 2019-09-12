@@ -1,4 +1,5 @@
 """
+DEPRECATED!!! use create_dataset.py and load_dataset.py
 Parses the bpgn data.
 Creates three files:
 all_boards.txt contains all positions in the data as fen notations onse line for each position
